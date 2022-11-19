@@ -1,15 +1,17 @@
 package com.example.taskassigner.activities
 
-import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.WindowInsets
-import android.view.WindowManager
+import android.util.Log
 import com.example.taskassigner.R
 import com.example.taskassigner.databinding.ActivitySignInBinding
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 
-class SignInActivity : AppCompatActivity() {
+class SignInActivity : BaseActivity() {
     private lateinit var binding: ActivitySignInBinding
+    private lateinit var auth: FirebaseAuth
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -17,14 +19,7 @@ class SignInActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         // set sign up activity to fullscreen
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            window.insetsController?.hide(WindowInsets.Type.statusBars())
-        } else {
-            window.setFlags(
-                WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN
-            )
-        }
+        setScreenToFullSize()
 
         setSupportActionBar(binding.toolbarSignInActivity)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -32,6 +27,19 @@ class SignInActivity : AppCompatActivity() {
         binding.toolbarSignInActivity.setNavigationOnClickListener {
             onBackPressedDispatcher.onBackPressed()
         }
+
+        // Initialize Firebase Auth
+        auth = Firebase.auth
+
     }
+
+    override fun onStart() {
+        super.onStart()
+        // Check if user is signed in (non-null) and update UI accordingly.
+        val currentUser = auth.currentUser
+        Log.i("Current User", "$currentUser")
+
+    }
+
 
 }
