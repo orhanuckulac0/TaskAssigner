@@ -3,7 +3,12 @@
     <string name="intro_image">IntroImage</string>
     <string name="lets_get_started">Let\'s Get Started</string>
     <string name="intro_text">Collaborate and Plan Together Across Multiple Devices on TaskAssigner\'s Minimalist interface.</string>
+
     <string name="sign_in">SIGN IN</string>
     <string name="sign_up">SIGN UP</string>
+    <string name="sign_up_description_text">Enter your name, email and password to register with us.</string>
+    <string name="name">Name</string>
+    <string name="password">Password</string>
+    <string name="email">Email</string>
 
 </resources>

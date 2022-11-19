@@ -1,23 +1,21 @@
 package com.example.taskassigner.activities
 
-import android.content.Intent
-import android.graphics.Typeface
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.WindowInsets
 import android.view.WindowManager
-import com.example.taskassigner.databinding.ActivityIntroBinding
+import com.example.taskassigner.R
+import com.example.taskassigner.databinding.ActivitySignUpBinding
 
-class IntroActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityIntroBinding
-
+class SignUpActivity : AppCompatActivity() {
+    private lateinit var binding: ActivitySignUpBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityIntroBinding.inflate(layoutInflater)
+        binding = ActivitySignUpBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // set splashscreen to fullscreen
+        // set sign up activity to fullscreen
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             window.insetsController?.hide(WindowInsets.Type.statusBars())
         } else {
@@ -27,14 +25,11 @@ class IntroActivity : AppCompatActivity() {
             )
         }
 
-        // assign the text font
-        val typeFace: Typeface = Typeface.createFromAsset(assets, "Quartist.ttf")
-        typeFace.isBold
-        binding.tvAppNameIntro.typeface = typeFace
-
-        binding.btnSignUpIntro.setOnClickListener {
-            val intent = Intent(this, SignUpActivity::class.java)
-            startActivity(intent)
+        setSupportActionBar(binding.toolbarSignUpActivity)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_black_color_black_24dp)
+        binding.toolbarSignUpActivity.setNavigationOnClickListener {
+            onBackPressedDispatcher.onBackPressed()
         }
     }
 }
