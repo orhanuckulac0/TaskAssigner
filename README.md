@@ -1,3 +1,3 @@
 # TaskAssigner
-a project management app for multiple users
+a project management app for multiple users <br>
 This is an ongoing project.
