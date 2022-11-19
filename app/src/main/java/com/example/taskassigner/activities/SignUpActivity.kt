@@ -43,9 +43,9 @@ class SignUpActivity : BaseActivity() {
     }
 
     private fun registerUser(){
-        val name: String = binding.etName.text.toString().trim { it <= ' '}
-        val email: String = binding.etEmail.text.toString().trim { it <= ' '}
-        val password: String = binding.etPassword.text.toString()
+        val name: String = binding.etNameSignUp.text.toString().trim { it <= ' '}
+        val email: String = binding.etEmailSignUp.text.toString().trim { it <= ' '}
+        val password: String = binding.etPasswordSignUp.text.toString()
 
         if (validateForm(name, email, password)){
             showProgressDialog(resources.getString(R.string.please_wait))
@@ -53,8 +53,10 @@ class SignUpActivity : BaseActivity() {
             // register the user
             auth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this){ task ->
+
+                    cancelProgressDialog()
+
                     if (task.isSuccessful) {
-                        cancelProgressDialog()
 
                         // Sign up success
                         Log.d(TAG, "createUserWithEmail:success")
@@ -69,8 +71,6 @@ class SignUpActivity : BaseActivity() {
                         finish()  // for now, test
 
                     }else if (!task.isSuccessful){
-                        cancelProgressDialog()
-
                         try {
                             throw task.exception!!
                         }
@@ -89,10 +89,14 @@ class SignUpActivity : BaseActivity() {
                                 baseContext, "This user already exists..",
                                 Toast.LENGTH_SHORT
                             ).show()
+                        }catch(e: Exception){
+                            e.printStackTrace()
+                            Toast.makeText(
+                                baseContext, "Unknown error has occurred, please try again.",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     }else{
-                        cancelProgressDialog()
-
                         Toast.makeText(
                             baseContext, "An unknown error has occurred, please try again.",
                             Toast.LENGTH_SHORT
@@ -109,7 +113,7 @@ class SignUpActivity : BaseActivity() {
                 false
             }
             TextUtils.isEmpty(email) ->{
-                showErrorSnackBar("Please enter a email")
+                showErrorSnackBar("Please enter an email")
                 false
             }
             TextUtils.isEmpty(password) ->{
