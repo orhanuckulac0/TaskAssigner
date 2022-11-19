@@ -7,10 +7,13 @@ import android.util.Log
 import android.widget.Toast
 import com.example.taskassigner.R
 import com.example.taskassigner.databinding.ActivitySignUpBinding
+import com.example.taskassigner.firebase.FirestoreClass
+import com.example.taskassigner.models.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 
@@ -42,6 +45,17 @@ class SignUpActivity : BaseActivity() {
         }
     }
 
+    fun userRegisteredSuccess(){
+        Toast.makeText(
+            baseContext, "Authentication successful. User registered.",
+            Toast.LENGTH_SHORT
+        ).show()
+        cancelProgressDialog()
+
+        FirebaseAuth.getInstance().signOut()
+        finish()
+    }
+
     private fun registerUser(){
         val name: String = binding.etNameSignUp.text.toString().trim { it <= ' '}
         val email: String = binding.etEmailSignUp.text.toString().trim { it <= ' '}
@@ -50,25 +64,19 @@ class SignUpActivity : BaseActivity() {
         if (validateForm(name, email, password)){
             showProgressDialog(resources.getString(R.string.please_wait))
 
-            // register the user
+            // create an authentication entry for the user on firebase
             auth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this){ task ->
-
-                    cancelProgressDialog()
 
                     if (task.isSuccessful) {
 
                         // Sign up success
                         Log.d(TAG, "createUserWithEmail:success")
-                        val firebaseUser = auth.currentUser
-                        Log.i("User", "${firebaseUser?.email}")
+                        val firebaseUser: FirebaseUser = auth.currentUser!!
+                        val registeredEmail = firebaseUser.email!!
 
-                        Toast.makeText(
-                            baseContext, "Authentication successful. User registered.",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        signOutCurrentUser(auth)  // for now, test
-                        finish()  // for now, test
+                        val user = User(firebaseUser.uid, name, registeredEmail)  // create collection for the user
+                        FirestoreClass().registerUser(this, user)  // create a document for the user on firestore database
 
                     }else if (!task.isSuccessful){
                         try {
