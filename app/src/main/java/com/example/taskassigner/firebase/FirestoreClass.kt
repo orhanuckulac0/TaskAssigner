@@ -6,6 +6,7 @@ import com.example.taskassigner.utils.Constants
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
+import com.google.firebase.firestore.auth.User
 
 class FirestoreClass {
 
@@ -32,6 +33,7 @@ class FirestoreClass {
             .addOnSuccessListener { document ->
                 // get logged in user data in User model
                 val loggedInUser = document.toObject(UserModel::class.java)
+
                 if (loggedInUser != null){
                     callback.userLoginSuccess(loggedInUser)
                 }
@@ -40,7 +42,26 @@ class FirestoreClass {
                     e->
                 Log.e(callback.javaClass.simpleName, "Error", e)
             }
+    }
 
+    // this func will pass user details
+    fun updateNavigationUserDetails(callback: UserInformation){
+        mFireStore.collection(Constants.USERS)
+            // create new doc for every user
+            .document(getCurrentUserId())
+            .get()
+            .addOnSuccessListener { document ->
+                // get logged in user data in User model
+                val loggedInUser = document.toObject(UserModel::class.java)
+
+                if (loggedInUser != null){
+                    callback.updateNavigation(loggedInUser)
+                }
+
+            }.addOnFailureListener {
+                    e->
+                Log.e(callback.javaClass.simpleName, "Error", e)
+            }
     }
 
     fun getCurrentUserId(): String {
@@ -61,5 +82,7 @@ class FirestoreClass {
         fun userLoginSuccess(user: UserModel)
         fun userLoginFailure(error: String?)
     }
-
+    interface UserInformation {
+        fun updateNavigation(user: UserModel)
+    }
 }

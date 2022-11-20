@@ -3,18 +3,27 @@ package com.example.taskassigner.activities
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
+import com.bumptech.glide.Glide
 import com.example.taskassigner.R
 import com.example.taskassigner.databinding.ActivityMainBinding
+import com.example.taskassigner.firebase.FirestoreClass
+import com.example.taskassigner.models.UserModel
+import com.google.android.material.imageview.ShapeableImageView
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 
-class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
-    private lateinit var binding: ActivityMainBinding
+class MainActivity :
+    BaseActivity(),
+    NavigationView.OnNavigationItemSelectedListener,
+    FirestoreClass.UserInformation
+{
 
+    private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -23,6 +32,8 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
         setupActionBar()
         binding.navView.setNavigationItemSelectedListener(this)
+
+        FirestoreClass().updateNavigationUserDetails(this)
     }
 
     private fun setupActionBar(){
@@ -67,5 +78,17 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         }
         binding.drawerLayout.openDrawer(GravityCompat.START)
         return true
+    }
+
+    override fun updateNavigation(user: UserModel) {
+        // use Glide to set the image
+        Glide
+            .with(this)
+            .load(user.image)
+            .centerCrop()
+            .placeholder(R.drawable.ic_user_place_holder)
+            .into(findViewById<ShapeableImageView>(R.id.profileImage))
+
+        findViewById<TextView>(R.id.tvUsername).text = user.name
     }
 }
