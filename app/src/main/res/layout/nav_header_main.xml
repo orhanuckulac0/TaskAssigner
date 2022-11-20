@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/height_of_nav_main"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@drawable/nav_header_main_background"
+    android:gravity="bottom"
+    android:orientation="vertical"
+    android:theme="@style/ThemeOverlay.AppCompat.Dark">
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/sivProfileImage"
+        android:layout_width="@dimen/nav_image_size"
+        android:layout_height="@dimen/nav_image_size"
+        android:adjustViewBounds="true"
+        android:src="@drawable/ic_user_place_holder"
+        android:scaleType="centerCrop"
+        android:layout_marginStart="@dimen/nav_content_margin_StartEnd"
+        android:layout_marginEnd="@dimen/nav_content_margin_StartEnd"
+        app:shapeAppearanceOverlay="@style/makeImageRounded"
+        />
+
+    <TextView
+        android:id="@+id/tvUsername"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/nav_content_margin_StartEnd"
+        android:layout_marginEnd="@dimen/nav_content_margin_StartEnd"
+        android:layout_marginTop="@dimen/nav_content_margin_top"
+        android:layout_marginBottom="@dimen/nav_content_margin_bottom"
+        android:textColor="@color/white"
+        android:textSize="@dimen/nav_user_name_text_size"
+        tools:text="Username"/>
+    
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/nav_divider_height"
+        android:background="@color/colorAccent"/>
+
+
+
+</LinearLayout>
