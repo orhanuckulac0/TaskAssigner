@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import com.example.taskassigner.databinding.ActivitySplashBinding
+import com.example.taskassigner.firebase.FirestoreClass
 
 @SuppressLint("CustomSplashScreen")
 class SplashActivity : BaseActivity() {
@@ -28,9 +29,17 @@ class SplashActivity : BaseActivity() {
 
         // after 3 seconds, redirect to main activity and finish the splashscreen
         Handler(Looper.getMainLooper()).postDelayed({
-            val intent = Intent(this@SplashActivity, IntroActivity::class.java)
-            startActivity(intent)
+            // check if current user is still logged in, or recently logged in and we have the data
+            val currentUserID = FirestoreClass().getCurrentUserId()
+            if (currentUserID.isNotEmpty()){
+                val intent = Intent(this@SplashActivity, MainActivity::class.java)
+                startActivity(intent)
+            }else{
+                val intent = Intent(this@SplashActivity, IntroActivity::class.java)
+                startActivity(intent)
+            }
             finish()
+
         }, 3000)
     }
 }
