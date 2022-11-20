@@ -7,11 +7,13 @@ import android.util.Log
 import android.widget.Toast
 import com.example.taskassigner.R
 import com.example.taskassigner.databinding.ActivitySignInBinding
+import com.example.taskassigner.firebase.FirestoreClass
+import com.example.taskassigner.models.UserModel
 import com.google.firebase.auth.*
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 
-class SignInActivity : BaseActivity() {
+class SignInActivity : BaseActivity(), FirestoreClass.UserLoginCallback {
     private lateinit var binding: ActivitySignInBinding
     private lateinit var auth: FirebaseAuth
 
@@ -59,15 +61,11 @@ class SignInActivity : BaseActivity() {
                     cancelProgressDialog()
 
                     if (task.isSuccessful) {
+                        FirestoreClass().signInUser(this)
 
                         // Sign in success
                         Toast.makeText(baseContext, "Sign in success.",
                             Toast.LENGTH_SHORT).show()
-                        val user = auth.currentUser
-                        Log.i("User Email", "${user?.email}")
-
-                        startActivity(Intent(this@SignInActivity, MainActivity::class.java))
-                        finish() // for now test
 
                     }else if (!task.isSuccessful){
                         try {
@@ -117,5 +115,15 @@ class SignInActivity : BaseActivity() {
                 true
             }
         }
+    }
+
+    override fun userLoginSuccess(user: UserModel) {
+        cancelProgressDialog()
+        startActivity(Intent(this, MainActivity::class.java))
+        finish()
+    }
+
+    override fun userLoginFailure(error: String?) {
+        TODO("Not yet implemented")
     }
 }
