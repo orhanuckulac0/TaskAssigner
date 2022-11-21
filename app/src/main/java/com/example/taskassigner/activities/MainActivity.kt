@@ -4,7 +4,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import com.bumptech.glide.Glide
@@ -20,7 +19,7 @@ import com.google.firebase.ktx.Firebase
 class MainActivity :
     BaseActivity(),
     NavigationView.OnNavigationItemSelectedListener,
-    FirestoreClass.UserInformation
+    FirestoreClass.UserDataLoadCallback
 {
 
     private lateinit var binding: ActivityMainBinding
@@ -33,7 +32,7 @@ class MainActivity :
         setupActionBar()
         binding.navView.setNavigationItemSelectedListener(this)
 
-        FirestoreClass().updateNavigationUserDetails(this)
+        FirestoreClass().loadUserData(this)
     }
 
     private fun setupActionBar(){
@@ -66,7 +65,8 @@ class MainActivity :
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when(item.itemId){
             R.id.navMyProfile -> {
-                Toast.makeText(this, "Profile clicked", Toast.LENGTH_LONG).show()
+                val intent = Intent(this, ProfileActivity::class.java)
+                startActivity(intent)
             }
             R.id.navSignOut -> {
                 Firebase.auth.signOut()
@@ -80,8 +80,8 @@ class MainActivity :
         return true
     }
 
-    override fun updateNavigation(user: UserModel) {
-        // use Glide to set the image
+    override fun userDataLoadSuccess(user: UserModel) {
+        // set user image and user name on UI
         Glide
             .with(this)
             .load(user.image)
@@ -90,5 +90,9 @@ class MainActivity :
             .into(findViewById<ShapeableImageView>(R.id.profileImage))
 
         findViewById<TextView>(R.id.tvUsername).text = user.name
+    }
+
+    override fun userDataLoadFailed(error: String?) {
+        TODO("Not yet implemented")
     }
 }

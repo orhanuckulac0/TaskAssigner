@@ -13,7 +13,7 @@ import com.google.firebase.auth.*
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 
-class SignInActivity : BaseActivity(), FirestoreClass.UserLoginCallback {
+class SignInActivity : BaseActivity(), FirestoreClass.UserDataLoadCallback {
     private lateinit var binding: ActivitySignInBinding
     private lateinit var auth: FirebaseAuth
 
@@ -25,13 +25,7 @@ class SignInActivity : BaseActivity(), FirestoreClass.UserLoginCallback {
 
         // set sign up activity to fullscreen
         setScreenToFullSize()
-
-        setSupportActionBar(binding.toolbarSignInActivity)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_black_color_black_24dp)
-        binding.toolbarSignInActivity.setNavigationOnClickListener {
-            onBackPressedDispatcher.onBackPressed()
-        }
+        setupActionBar()
 
         // Initialize Firebase Auth
         auth = Firebase.auth
@@ -48,6 +42,19 @@ class SignInActivity : BaseActivity(), FirestoreClass.UserLoginCallback {
         Log.i("Current User", "$currentUser")
     }
 
+    private fun setupActionBar(){
+        setSupportActionBar(binding.toolbarSignInActivity)
+        val actionBar = supportActionBar
+        if (actionBar != null){
+            supportActionBar?.setDisplayHomeAsUpEnabled(true)
+            supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_black_color_arrow_24dp)
+            binding.toolbarSignInActivity.setNavigationOnClickListener {
+                onBackPressedDispatcher.onBackPressed()
+            }
+        }
+    }
+
+
     private fun signInUser(){
         val email = binding.etEmailSignIn.text.toString().trim { it <= ' '}
         val password = binding.etPasswordSignIn.text.toString().trim { it <= ' '}
@@ -61,7 +68,7 @@ class SignInActivity : BaseActivity(), FirestoreClass.UserLoginCallback {
                     cancelProgressDialog()
 
                     if (task.isSuccessful) {
-                        FirestoreClass().signInUser(this)
+                        FirestoreClass().loadUserData(this)
 
                         // Sign in success
                         Toast.makeText(baseContext, "Sign in success.",
@@ -117,13 +124,13 @@ class SignInActivity : BaseActivity(), FirestoreClass.UserLoginCallback {
         }
     }
 
-    override fun userLoginSuccess(user: UserModel) {
+    override fun userDataLoadSuccess(user: UserModel) {
         cancelProgressDialog()
         startActivity(Intent(this, MainActivity::class.java))
         finish()
     }
 
-    override fun userLoginFailure(error: String?) {
+    override fun userDataLoadFailed(error: String?) {
         TODO("Not yet implemented")
     }
 }

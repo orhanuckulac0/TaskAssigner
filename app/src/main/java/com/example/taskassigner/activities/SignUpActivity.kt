@@ -32,18 +32,25 @@ class SignUpActivity : BaseActivity(), FirestoreClass.UserRegistrationCallback {
 
         // set sign up activity to fullscreen
         setScreenToFullSize()
-
-        setSupportActionBar(binding.toolbarSignUpActivity)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_black_color_black_24dp)
-        binding.toolbarSignUpActivity.setNavigationOnClickListener {
-            onBackPressedDispatcher.onBackPressed()
-        }
+        setupActionBar()
 
         binding.btnSignUp.setOnClickListener {
             registerUser()
         }
     }
+
+    private fun setupActionBar(){
+        setSupportActionBar(binding.toolbarSignUpActivity)
+        val actionBar = supportActionBar
+        if (actionBar != null){
+            supportActionBar?.setDisplayHomeAsUpEnabled(true)
+            supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_black_color_arrow_24dp)
+            binding.toolbarSignUpActivity.setNavigationOnClickListener {
+                onBackPressedDispatcher.onBackPressed()
+            }
+        }
+    }
+
 
     private fun registerUser(){
         val name: String = binding.etNameSignUp.text.toString().trim { it <= ' '}

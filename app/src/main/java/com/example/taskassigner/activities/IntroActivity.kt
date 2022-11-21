@@ -24,13 +24,11 @@ class IntroActivity : BaseActivity() {
         binding.btnSignUpIntro.setOnClickListener {
             val intent = Intent(this@IntroActivity, SignUpActivity::class.java)
             startActivity(intent)
-            finish()
         }
 
         binding.btnSignInIntro.setOnClickListener {
             val intent = Intent(this@IntroActivity, SignInActivity::class.java)
             startActivity(intent)
-            finish()
         }
     }
 }
