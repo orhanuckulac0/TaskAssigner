@@ -24,6 +24,7 @@ import com.example.taskassigner.utils.Constants
 import com.google.android.material.imageview.ShapeableImageView
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
+import de.hdodenhof.circleimageview.CircleImageView
 import java.io.IOException
 
 class ProfileActivity : BaseActivity(),
@@ -50,7 +51,7 @@ class ProfileActivity : BaseActivity(),
                         .load(mSelectedImageFileUri)  // load requires Uri
                         .centerCrop()
                         .placeholder(R.drawable.ic_user_place_holder)
-                        .into(findViewById<ShapeableImageView>(R.id.ivUserImage))
+                        .into(findViewById<CircleImageView>(R.id.ivUserImage))
 
                 }catch (e: IOException){
                     e.printStackTrace()
@@ -123,7 +124,7 @@ class ProfileActivity : BaseActivity(),
 
     private fun showRationaleDialogForGallery(){
         val builder: AlertDialog.Builder = AlertDialog.Builder(this)
-        builder.setTitle("Happy Places App")
+        builder.setTitle("Task Assigner")
             .setMessage("TaskAssigner needs Files & Media permission to upload an image from your storage." +
                     " Would you like to go to settings and give permission?")
             .setNegativeButton("Cancel"){
