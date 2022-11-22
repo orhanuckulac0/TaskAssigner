@@ -1,6 +1,7 @@
 package com.example.taskassigner.activities
 
 import android.Manifest
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -25,7 +26,9 @@ import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import java.io.IOException
 
-class ProfileActivity : BaseActivity(), FirestoreClass.UserDataLoadCallback, FirestoreClass.UserDataUpdateCallback {
+class ProfileActivity : BaseActivity(),
+    FirestoreClass.UserDataLoadCallback,
+    FirestoreClass.UserDataUpdateCallback {
 
     private var binding: ActivityProfileBinding? = null
     private var mSelectedImageFileUri: Uri? = null
@@ -84,6 +87,7 @@ class ProfileActivity : BaseActivity(), FirestoreClass.UserDataLoadCallback, Fir
             if (mSelectedImageFileUri != null) {
                 uploadUserImage()
             }else{
+                showProgressDialog(resources.getString(R.string.please_wait))
                 updateUserProfileData()
             }
         }
@@ -135,8 +139,9 @@ class ProfileActivity : BaseActivity(), FirestoreClass.UserDataLoadCallback, Fir
     }
 
     private fun uploadUserImage(){
+        showProgressDialog(resources.getString(R.string.please_wait))
+
         if (mSelectedImageFileUri != null){
-            showProgressDialog(resources.getString(R.string.please_wait))
 
             // store image to firebase storage
             val sRef : StorageReference = FirebaseStorage.getInstance().reference.child(
@@ -156,6 +161,8 @@ class ProfileActivity : BaseActivity(), FirestoreClass.UserDataLoadCallback, Fir
             }.addOnFailureListener{
                 exception->
                 Toast.makeText(this@ProfileActivity, exception.message, Toast.LENGTH_LONG).show()
+
+                cancelProgressDialog()
             }
         }
     }
@@ -182,7 +189,6 @@ class ProfileActivity : BaseActivity(), FirestoreClass.UserDataLoadCallback, Fir
         if (anyChangesMade){
             FirestoreClass().updateUserProfileData(this, userHashMap)
         }
-        cancelProgressDialog()
     }
 
     private fun getFileExtension(uri: Uri?): String?{
@@ -215,6 +221,9 @@ class ProfileActivity : BaseActivity(), FirestoreClass.UserDataLoadCallback, Fir
 
     override fun updateDataLoadSuccess() {
         Toast.makeText(this,"Profile details are updated.", Toast.LENGTH_LONG).show()
+        cancelProgressDialog()
+        // return activity result code to match it with result launcher
+        setResult(Activity.RESULT_OK)
         finish()
     }
 

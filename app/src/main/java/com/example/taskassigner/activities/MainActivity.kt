@@ -1,9 +1,13 @@
 package com.example.taskassigner.activities
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.MenuItem
 import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import com.bumptech.glide.Glide
@@ -23,6 +27,19 @@ class MainActivity :
 {
 
     private var binding: ActivityMainBinding? = null
+
+    private var resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            // There are no request codes
+            // refresh the user data
+            FirestoreClass().loadUserData(this)
+            toggleDrawer()
+        }else{
+            Log.e("Error", "Cancelled")
+            Toast.makeText(this, "An error occurred, please try again.", Toast.LENGTH_LONG).show()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,7 +83,8 @@ class MainActivity :
         when(item.itemId){
             R.id.navMyProfile -> {
                 val intent = Intent(this, ProfileActivity::class.java)
-                startActivity(intent)
+                // start the activity for result
+                resultLauncher.launch(intent)
             }
             R.id.navSignOut -> {
                 Firebase.auth.signOut()

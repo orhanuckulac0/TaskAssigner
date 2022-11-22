@@ -14,15 +14,12 @@ import androidx.core.content.ContextCompat
 import com.example.taskassigner.R
 import com.example.taskassigner.databinding.ActivityBaseBinding
 import com.google.android.material.snackbar.Snackbar
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 
 open class BaseActivity : AppCompatActivity() {
     private lateinit var binding: ActivityBaseBinding
 
     private var doubleBackToExitPressedOnce = false
-    private lateinit var mProgressDialog: Dialog
+    private var mProgressDialog: Dialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,21 +41,13 @@ open class BaseActivity : AppCompatActivity() {
 
     fun showProgressDialog(text: String){
         mProgressDialog = Dialog(this)
-        mProgressDialog.setContentView(R.layout.dialog_progress)
-        mProgressDialog.findViewById<TextView>(R.id.tvProgressBarText).text = text
-        mProgressDialog.show()
+        mProgressDialog?.setContentView(R.layout.dialog_progress)
+        mProgressDialog?.findViewById<TextView>(R.id.tvProgressBarText)?.text = text
+        mProgressDialog?.show()
     }
 
     fun cancelProgressDialog(){
-        mProgressDialog.dismiss()
-    }
-
-    fun getCurrentUserId(): String{
-        return FirebaseAuth.getInstance().currentUser!!.uid
-    }
-
-    fun signOutCurrentUser(auth: FirebaseAuth){
-        Firebase.auth.signOut()
+        mProgressDialog?.dismiss()
     }
 
     fun doubleBackToExit(){
