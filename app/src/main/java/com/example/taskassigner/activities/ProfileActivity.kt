@@ -19,16 +19,17 @@ import com.example.taskassigner.R
 import com.example.taskassigner.databinding.ActivityProfileBinding
 import com.example.taskassigner.firebase.FirestoreClass
 import com.example.taskassigner.models.UserModel
+import com.example.taskassigner.utils.Constants
 import com.google.android.material.imageview.ShapeableImageView
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
-import com.google.firebase.storage.UploadTask.TaskSnapshot
 import java.io.IOException
 
-class ProfileActivity : BaseActivity(), FirestoreClass.UserDataLoadCallback {
+class ProfileActivity : BaseActivity(), FirestoreClass.UserDataLoadCallback, FirestoreClass.UserDataUpdateCallback {
 
     private var binding: ActivityProfileBinding? = null
     private var mSelectedImageFileUri: Uri? = null
+    private lateinit var mUserDetails: UserModel
     private var mProfileImageURL: String = ""
 
     private val openGalleryLauncher: ActivityResultLauncher<Intent> =
@@ -80,8 +81,10 @@ class ProfileActivity : BaseActivity(), FirestoreClass.UserDataLoadCallback {
         }
 
         binding?.btnUpdate?.setOnClickListener{
-            if (mSelectedImageFileUri != null){
+            if (mSelectedImageFileUri != null) {
                 uploadUserImage()
+            }else{
+                updateUserProfileData()
             }
         }
     }
@@ -132,26 +135,52 @@ class ProfileActivity : BaseActivity(), FirestoreClass.UserDataLoadCallback {
     }
 
     private fun uploadUserImage(){
-        showProgressDialog(resources.getString(R.string.please_wait))
         if (mSelectedImageFileUri != null){
+            showProgressDialog(resources.getString(R.string.please_wait))
+
             // store image to firebase storage
             val sRef : StorageReference = FirebaseStorage.getInstance().reference.child(
                 "USER_IMAGE"+System.currentTimeMillis() + "." + getFileExtension(mSelectedImageFileUri)
             )
             sRef.putFile(mSelectedImageFileUri!!).addOnSuccessListener {
                 taskSnapshot ->
+                Log.i("Firebase Image URL", taskSnapshot.metadata!!.reference!!.downloadUrl.toString())
 
                 taskSnapshot.metadata!!.reference!!.downloadUrl.addOnSuccessListener {
                     uri->  // actual link of the image
+                    Log.i("Downloadable Image URI", uri.toString())
                     mProfileImageURL = uri.toString()
 
-                    // TODO UpdateUserProfileData
-
+                    updateUserProfileData()
                 }
             }.addOnFailureListener{
                 exception->
                 Toast.makeText(this@ProfileActivity, exception.message, Toast.LENGTH_LONG).show()
             }
+        }
+    }
+
+    private fun updateUserProfileData(){
+        val userHashMap = HashMap<String, Any>()
+        var anyChangesMade = false
+
+        if (mProfileImageURL.isNotEmpty() && mProfileImageURL != mUserDetails.image){
+            userHashMap[Constants.IMAGE] = mProfileImageURL
+            anyChangesMade = true
+        }
+
+        if (binding?.etName?.text.toString() != mUserDetails.name && binding?.etName?.text.toString() != ""){
+            userHashMap[Constants.NAME] = binding?.etName?.text.toString()
+            anyChangesMade = true
+        }
+
+        if (binding?.etMobile?.text.toString() != mUserDetails.mobile.toString() && binding?.etMobile?.text.toString() != ""){
+            userHashMap[Constants.MOBILE] = binding?.etMobile?.text.toString().toLong()
+            anyChangesMade = true
+        }
+
+        if (anyChangesMade){
+            FirestoreClass().updateUserProfileData(this, userHashMap)
         }
         cancelProgressDialog()
     }
@@ -162,6 +191,10 @@ class ProfileActivity : BaseActivity(), FirestoreClass.UserDataLoadCallback {
 
 
     override fun userDataLoadSuccess(user: UserModel) {
+        // initiate the lateinit mUserDetails with the UserModel this fun receives
+        // so that we can use it later on another func for val userHashMap
+        mUserDetails = user
+
         Glide
             .with(this)
             .load(user.image)
@@ -177,6 +210,15 @@ class ProfileActivity : BaseActivity(), FirestoreClass.UserDataLoadCallback {
     }
 
     override fun userDataLoadFailed(error: String?) {
+        TODO("Not yet implemented")
+    }
+
+    override fun updateDataLoadSuccess() {
+        Toast.makeText(this,"Profile details are updated.", Toast.LENGTH_LONG).show()
+        finish()
+    }
+
+    override fun updateDataLoadFailed(error: String?) {
         TODO("Not yet implemented")
     }
 

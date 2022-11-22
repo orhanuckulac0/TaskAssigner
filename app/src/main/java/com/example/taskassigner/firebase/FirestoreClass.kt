@@ -43,6 +43,22 @@ class FirestoreClass {
             }
     }
 
+    fun updateUserProfileData(callback: UserDataUpdateCallback, userHashMap: HashMap<String, Any>){
+        mFireStore.collection(Constants.USERS)
+            // create new doc for every user
+            .document(getCurrentUserId())
+            .update(userHashMap)
+            .addOnSuccessListener {
+                Log.i(callback.javaClass.simpleName, "Profile Data updated.")
+
+                callback.updateDataLoadSuccess()
+
+            }.addOnFailureListener {
+                    e->
+                Log.e(callback.javaClass.simpleName, "Error", e)
+            }
+    }
+
     fun getCurrentUserId(): String {
         val currentUser = FirebaseAuth.getInstance().currentUser
         var currentUserID = ""
@@ -60,5 +76,10 @@ class FirestoreClass {
     interface UserDataLoadCallback {
         fun userDataLoadSuccess(user: UserModel)
         fun userDataLoadFailed(error: String?)
+    }
+
+    interface UserDataUpdateCallback {
+        fun updateDataLoadSuccess()
+        fun updateDataLoadFailed(error: String?)
     }
 }
