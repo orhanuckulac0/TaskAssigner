@@ -11,12 +11,12 @@ import com.example.taskassigner.firebase.FirestoreClass
 
 @SuppressLint("CustomSplashScreen")
 class SplashActivity : BaseActivity() {
-    private lateinit var binding: ActivitySplashBinding
+    private var binding: ActivitySplashBinding? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySplashBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentView(binding?.root)
 
         // set splashscreen to fullscreen
         setScreenToFullSize()
@@ -24,8 +24,8 @@ class SplashActivity : BaseActivity() {
         // assign the text font
         val typeFace: Typeface = Typeface.createFromAsset(assets, "Quartist.ttf")
         typeFace.isBold
-        binding.tvWelcome.typeface = typeFace
-        binding.tvAppName.typeface = typeFace
+        binding?.tvWelcome?.typeface = typeFace
+        binding?.tvAppName?.typeface = typeFace
 
         // after 3 seconds, redirect to main activity and finish the splashscreen
         Handler(Looper.getMainLooper()).postDelayed({
@@ -41,5 +41,13 @@ class SplashActivity : BaseActivity() {
             finish()
 
         }, 3000)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        if (binding != null){
+            binding = null
+        }
     }
 }

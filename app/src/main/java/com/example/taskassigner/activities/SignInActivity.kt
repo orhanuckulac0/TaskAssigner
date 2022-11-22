@@ -14,14 +14,14 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 
 class SignInActivity : BaseActivity(), FirestoreClass.UserDataLoadCallback {
-    private lateinit var binding: ActivitySignInBinding
+    private var binding: ActivitySignInBinding? = null
     private lateinit var auth: FirebaseAuth
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySignInBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentView(binding?.root)
 
         // set sign up activity to fullscreen
         setScreenToFullSize()
@@ -30,7 +30,7 @@ class SignInActivity : BaseActivity(), FirestoreClass.UserDataLoadCallback {
         // Initialize Firebase Auth
         auth = Firebase.auth
 
-        binding.btnSignIn.setOnClickListener {
+        binding?.btnSignIn?.setOnClickListener {
             signInUser()
         }
     }
@@ -43,12 +43,12 @@ class SignInActivity : BaseActivity(), FirestoreClass.UserDataLoadCallback {
     }
 
     private fun setupActionBar(){
-        setSupportActionBar(binding.toolbarSignInActivity)
+        setSupportActionBar(binding?.toolbarSignInActivity)
         val actionBar = supportActionBar
         if (actionBar != null){
             supportActionBar?.setDisplayHomeAsUpEnabled(true)
             supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_black_color_arrow_24dp)
-            binding.toolbarSignInActivity.setNavigationOnClickListener {
+            binding?.toolbarSignInActivity?.setNavigationOnClickListener {
                 onBackPressedDispatcher.onBackPressed()
             }
         }
@@ -56,8 +56,8 @@ class SignInActivity : BaseActivity(), FirestoreClass.UserDataLoadCallback {
 
 
     private fun signInUser(){
-        val email = binding.etEmailSignIn.text.toString().trim { it <= ' '}
-        val password = binding.etPasswordSignIn.text.toString().trim { it <= ' '}
+        val email = binding?.etEmailSignIn?.text.toString().trim { it <= ' '}
+        val password = binding?.etPasswordSignIn?.text.toString().trim { it <= ' '}
 
         if (validateForm(email, password)){
             showProgressDialog(resources.getString(R.string.please_wait))
@@ -132,5 +132,12 @@ class SignInActivity : BaseActivity(), FirestoreClass.UserDataLoadCallback {
 
     override fun userDataLoadFailed(error: String?) {
         TODO("Not yet implemented")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (binding != null){
+            binding = null
+        }
     }
 }

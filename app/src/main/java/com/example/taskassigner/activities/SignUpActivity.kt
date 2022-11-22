@@ -19,13 +19,13 @@ import com.google.firebase.ktx.Firebase
 
 
 class SignUpActivity : BaseActivity(), FirestoreClass.UserRegistrationCallback {
-    private lateinit var binding: ActivitySignUpBinding
+    private var binding: ActivitySignUpBinding? = null
     private lateinit var auth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySignUpBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentView(binding?.root)
 
         // Initialize Firebase Auth
         auth = Firebase.auth
@@ -34,18 +34,18 @@ class SignUpActivity : BaseActivity(), FirestoreClass.UserRegistrationCallback {
         setScreenToFullSize()
         setupActionBar()
 
-        binding.btnSignUp.setOnClickListener {
+        binding?.btnSignUp?.setOnClickListener {
             registerUser()
         }
     }
 
     private fun setupActionBar(){
-        setSupportActionBar(binding.toolbarSignUpActivity)
+        setSupportActionBar(binding?.toolbarSignUpActivity)
         val actionBar = supportActionBar
         if (actionBar != null){
             supportActionBar?.setDisplayHomeAsUpEnabled(true)
             supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_black_color_arrow_24dp)
-            binding.toolbarSignUpActivity.setNavigationOnClickListener {
+            binding?.toolbarSignUpActivity?.setNavigationOnClickListener {
                 onBackPressedDispatcher.onBackPressed()
             }
         }
@@ -53,9 +53,9 @@ class SignUpActivity : BaseActivity(), FirestoreClass.UserRegistrationCallback {
 
 
     private fun registerUser(){
-        val name: String = binding.etNameSignUp.text.toString().trim { it <= ' '}
-        val email: String = binding.etEmailSignUp.text.toString().trim { it <= ' '}
-        val password: String = binding.etPasswordSignUp.text.toString()
+        val name: String = binding?.etNameSignUp?.text.toString().trim { it <= ' '}
+        val email: String = binding?.etEmailSignUp?.text.toString().trim { it <= ' '}
+        val password: String = binding?.etPasswordSignUp?.text.toString()
 
         if (validateForm(name, email, password)){
             showProgressDialog(resources.getString(R.string.please_wait))
@@ -143,5 +143,12 @@ class SignUpActivity : BaseActivity(), FirestoreClass.UserRegistrationCallback {
 
     override fun userRegistrationFailure(error: String?) {
         TODO("Not yet implemented")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (binding != null){
+            binding = null
+        }
     }
 }

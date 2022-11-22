@@ -22,15 +22,15 @@ class MainActivity :
     FirestoreClass.UserDataLoadCallback
 {
 
-    private lateinit var binding: ActivityMainBinding
+    private var binding: ActivityMainBinding? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentView(binding?.root)
 
         setupActionBar()
-        binding.navView.setNavigationItemSelectedListener(this)
+        binding?.navView?.setNavigationItemSelectedListener(this)
 
         FirestoreClass().loadUserData(this)
     }
@@ -46,17 +46,17 @@ class MainActivity :
     }
 
     private fun toggleDrawer(){
-        if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)){
-            binding.drawerLayout.closeDrawer(GravityCompat.START)
+        if (binding?.drawerLayout!!.isDrawerOpen(GravityCompat.START)){
+            binding?.drawerLayout!!.closeDrawer(GravityCompat.START)
         }else{
-            binding.drawerLayout.openDrawer(GravityCompat.START)
+            binding?.drawerLayout?.openDrawer(GravityCompat.START)
         }
     }
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)){
-            binding.drawerLayout.closeDrawer(GravityCompat.START)
+        if (binding?.drawerLayout!!.isDrawerOpen(GravityCompat.START)){
+            binding?.drawerLayout!!.closeDrawer(GravityCompat.START)
         }else{
             doubleBackToExit()
         }
@@ -76,7 +76,7 @@ class MainActivity :
                 finish()
             }
         }
-        binding.drawerLayout.openDrawer(GravityCompat.START)
+        binding?.drawerLayout!!.openDrawer(GravityCompat.START)
         return true
     }
 
@@ -94,5 +94,12 @@ class MainActivity :
 
     override fun userDataLoadFailed(error: String?) {
         TODO("Not yet implemented")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (binding != null){
+            binding = null
+        }
     }
 }
