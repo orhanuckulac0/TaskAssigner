@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
@@ -15,6 +14,7 @@ import com.example.taskassigner.R
 import com.example.taskassigner.databinding.ActivityMainBinding
 import com.example.taskassigner.firebase.FirestoreClass
 import com.example.taskassigner.models.UserModel
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.imageview.ShapeableImageView
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.ktx.auth
@@ -37,7 +37,6 @@ class MainActivity :
             toggleDrawer()
         }else{
             Log.e("Error", "Cancelled")
-            Toast.makeText(this, "An error occurred, please try again.", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -50,6 +49,13 @@ class MainActivity :
         binding?.navView?.setNavigationItemSelectedListener(this)
 
         FirestoreClass().loadUserData(this)
+
+        // setup intent for fab
+        findViewById<FloatingActionButton>(R.id.fabAddBoard).setOnClickListener {
+            val intent = Intent(this@MainActivity, CreateBoardActivity::class.java)
+            startActivity(intent)
+        }
+
     }
 
     private fun setupActionBar(){
