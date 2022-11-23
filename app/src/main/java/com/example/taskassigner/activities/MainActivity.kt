@@ -14,6 +14,7 @@ import com.example.taskassigner.R
 import com.example.taskassigner.databinding.ActivityMainBinding
 import com.example.taskassigner.firebase.FirestoreClass
 import com.example.taskassigner.models.UserModel
+import com.example.taskassigner.utils.Constants
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.imageview.ShapeableImageView
 import com.google.android.material.navigation.NavigationView
@@ -27,6 +28,7 @@ class MainActivity :
 {
 
     private var binding: ActivityMainBinding? = null
+    private lateinit var mUserName: String
 
     private var resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             result ->
@@ -53,6 +55,7 @@ class MainActivity :
         // setup intent for fab
         findViewById<FloatingActionButton>(R.id.fabAddBoard).setOnClickListener {
             val intent = Intent(this@MainActivity, CreateBoardActivity::class.java)
+            intent.putExtra(Constants.NAME, mUserName)
             startActivity(intent)
         }
 
@@ -105,6 +108,8 @@ class MainActivity :
     }
 
     override fun userDataLoadSuccess(user: UserModel) {
+        mUserName = user.name
+
         // set user image and user name on UI
         Glide
             .with(this)

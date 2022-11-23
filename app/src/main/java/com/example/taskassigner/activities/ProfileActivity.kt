@@ -168,6 +168,10 @@ class ProfileActivity : BaseActivity(),
         }
     }
 
+    private fun getFileExtension(uri: Uri?): String?{
+        return MimeTypeMap.getSingleton().getExtensionFromMimeType(contentResolver.getType(uri!!))
+    }
+
     private fun updateUserProfileData(){
         val userHashMap = HashMap<String, Any>()
         var anyChangesMade = false
@@ -189,14 +193,12 @@ class ProfileActivity : BaseActivity(),
 
         if (anyChangesMade){
             FirestoreClass().updateUserProfileData(this, userHashMap)
+        }else{
+            cancelProgressDialog()
         }
     }
 
-    private fun getFileExtension(uri: Uri?): String?{
-        return MimeTypeMap.getSingleton().getExtensionFromMimeType(contentResolver.getType(uri!!))
-    }
-
-
+    // to populate view with current user data
     override fun userDataLoadSuccess(user: UserModel) {
         // initiate the lateinit mUserDetails with the UserModel this fun receives
         // so that we can use it later on another func for val userHashMap
@@ -217,9 +219,12 @@ class ProfileActivity : BaseActivity(),
     }
 
     override fun userDataLoadFailed(error: String?) {
-        TODO("Not yet implemented")
+        Toast.makeText(this,"Something's wrong, please try again.", Toast.LENGTH_LONG).show()
+        cancelProgressDialog()
+        finish()
     }
 
+    // to update view when the update result is success
     override fun updateDataLoadSuccess() {
         Toast.makeText(this,"Profile details are updated.", Toast.LENGTH_LONG).show()
         cancelProgressDialog()
@@ -229,7 +234,9 @@ class ProfileActivity : BaseActivity(),
     }
 
     override fun updateDataLoadFailed(error: String?) {
-        TODO("Not yet implemented")
+        cancelProgressDialog()
+        setResult(Activity.RESULT_CANCELED)
+        finish()
     }
 
     override fun onDestroy() {

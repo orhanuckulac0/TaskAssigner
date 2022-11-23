@@ -9,18 +9,29 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
 import android.provider.Settings
+import android.text.TextUtils
+import android.util.Log
+import android.webkit.MimeTypeMap
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
 import com.example.taskassigner.R
 import com.example.taskassigner.databinding.ActivityCreateBoardBinding
+import com.example.taskassigner.firebase.FirestoreClass
+import com.example.taskassigner.models.BoardModel
+import com.example.taskassigner.utils.Constants
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
 import de.hdodenhof.circleimageview.CircleImageView
 import java.io.IOException
 
-class CreateBoardActivity : AppCompatActivity() {
+class CreateBoardActivity : BaseActivity(), FirestoreClass.CreateBoardCallback {
     private var binding: ActivityCreateBoardBinding? = null
-    private var mSelectedImageFileUri: Uri? = null
+    private var mSelectedBoardImageFileUri: Uri? = null
+    private lateinit var mUserName: String
+    private lateinit var mBoardImageURL: String
 
     private val openGalleryLauncher: ActivityResultLauncher<Intent> =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()){
@@ -29,12 +40,12 @@ class CreateBoardActivity : AppCompatActivity() {
             // then get the location of the data, URI, and assign it as background image
             if (result.resultCode == RESULT_OK && result.data != null){
                 val contentURI = result.data?.data
-                mSelectedImageFileUri = contentURI
+                mSelectedBoardImageFileUri = contentURI
 
                 try {
                     Glide
                         .with(this)
-                        .load(mSelectedImageFileUri)  // load requires Uri
+                        .load(mSelectedBoardImageFileUri)  // load requires Uri
                         .centerCrop()
                         .placeholder(R.drawable.ic_board_place_holder)
                         .into(findViewById<CircleImageView>(R.id.ivBoardImage))
@@ -66,6 +77,19 @@ class CreateBoardActivity : AppCompatActivity() {
 
         binding?.ivBoardImage?.setOnClickListener {
             requestStoragePermission()
+        }
+
+        binding?.btnCreate?.setOnClickListener {
+            if (mSelectedBoardImageFileUri != null){
+                uploadBoardImage()
+            }else{
+                showProgressDialog(resources.getString(R.string.please_wait))
+                createBoardDocument()
+            }
+        }
+
+        if (intent.hasExtra(Constants.NAME)){
+            mUserName = intent.getStringExtra(Constants.NAME)!!
         }
     }
 
@@ -112,5 +136,88 @@ class CreateBoardActivity : AppCompatActivity() {
             })
             }
         builder.create().show()
+    }
+
+    private fun uploadBoardImage(){
+        showProgressDialog(resources.getString(R.string.please_wait))
+
+        // store image to firebase storage
+        val sRef : StorageReference = FirebaseStorage.getInstance().reference.child(
+            "BOARD_IMAGE"+System.currentTimeMillis() + "." + getFileExtension(mSelectedBoardImageFileUri)
+        )
+        sRef.putFile(mSelectedBoardImageFileUri!!).addOnSuccessListener {
+                taskSnapshot ->
+            Log.i("Firebase Board Img URL", taskSnapshot.metadata!!.reference!!.downloadUrl.toString())
+
+            taskSnapshot.metadata!!.reference!!.downloadUrl.addOnSuccessListener {
+                    uri->  // actual link of the image
+                Log.i("Download Board Img URI", uri.toString())
+                mBoardImageURL = uri.toString()
+
+                createBoardDocument()
+            }
+        }.addOnFailureListener{
+                exception->
+            Toast.makeText(this@CreateBoardActivity, exception.message, Toast.LENGTH_LONG).show()
+
+            cancelProgressDialog()
+        }
+    }
+
+    private fun createBoardDocument(){
+        val assignedUsersArrayList: ArrayList<String> = ArrayList()
+
+        // check if inputs are not empty
+        if (validateBoardCreation()){
+
+            assignedUsersArrayList.add(FirestoreClass().getCurrentUserId())
+
+            val board = BoardModel(
+                name = binding?.etBoardName?.text.toString(),
+                image = mBoardImageURL,
+                createdBy = mUserName,
+                assignedTo = assignedUsersArrayList
+            )
+
+            FirestoreClass().createBoard(this, board)
+        }else{
+            Toast.makeText(this,
+                "An unknown error has occurred. Please try again.",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
+
+    private fun getFileExtension(uri: Uri?): String?{
+        return MimeTypeMap.getSingleton().getExtensionFromMimeType(contentResolver.getType(uri!!))
+    }
+
+    // make board image and title required
+    private fun validateBoardCreation(): Boolean{
+        return when {
+            mSelectedBoardImageFileUri == null -> {
+                cancelProgressDialog()
+                Toast.makeText(this, "Please upload an image.", Toast.LENGTH_LONG).show()
+                false
+            }
+            binding?.etBoardName?.text.isNullOrEmpty() ->{
+                cancelProgressDialog()
+                Toast.makeText(this, "Please enter a name.", Toast.LENGTH_LONG).show()
+                false
+            }else -> {
+                true
+            }
+        }
+    }
+
+
+    override fun createBoardSuccess() {
+        Toast.makeText(this@CreateBoardActivity, "Board created successfully.", Toast.LENGTH_LONG).show()
+        cancelProgressDialog()
+        finish()
+    }
+
+    override fun createBoardFailed(error: String?) {
+        TODO("Not yet implemented")
     }
 }

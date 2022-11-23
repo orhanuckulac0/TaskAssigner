@@ -1,6 +1,8 @@
 package com.example.taskassigner.firebase
 
 import android.util.Log
+import android.widget.Toast
+import com.example.taskassigner.models.BoardModel
 import com.example.taskassigner.models.UserModel
 import com.example.taskassigner.utils.Constants
 import com.google.firebase.auth.FirebaseAuth
@@ -45,13 +47,29 @@ class FirestoreClass {
 
     fun updateUserProfileData(callback: UserDataUpdateCallback, userHashMap: HashMap<String, Any>){
         mFireStore.collection(Constants.USERS)
-            // create new doc for every user
             .document(getCurrentUserId())
             .update(userHashMap)
             .addOnSuccessListener {
                 Log.i(callback.javaClass.simpleName, "Profile Data updated.")
 
                 callback.updateDataLoadSuccess()
+
+            }.addOnFailureListener {
+                    e->
+                Log.e(callback.javaClass.simpleName, "Error", e)
+            }
+    }
+
+    fun createBoard(callback: CreateBoardCallback, board: BoardModel){
+        // create new doc for the board
+        mFireStore.collection(Constants.BOARDS)
+                // set random doc id
+            .document()
+            .set(board, SetOptions.merge())
+            .addOnSuccessListener {
+
+                Log.e(callback.javaClass.simpleName, "Board created successfully.")
+                callback.createBoardSuccess()
 
             }.addOnFailureListener {
                     e->
@@ -81,5 +99,10 @@ class FirestoreClass {
     interface UserDataUpdateCallback {
         fun updateDataLoadSuccess()
         fun updateDataLoadFailed(error: String?)
+    }
+
+    interface CreateBoardCallback {
+        fun createBoardSuccess()
+        fun createBoardFailed(error: String?)
     }
 }
