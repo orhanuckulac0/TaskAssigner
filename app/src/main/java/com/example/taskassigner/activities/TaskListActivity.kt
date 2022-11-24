@@ -1,10 +1,14 @@
 package com.example.taskassigner.activities
 
 import android.os.Bundle
+import android.util.Log
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.taskassigner.R
+import com.example.taskassigner.adapters.TaskListItemsAdapter
 import com.example.taskassigner.databinding.ActivityTaskListBinding
 import com.example.taskassigner.firebase.FirestoreClass
 import com.example.taskassigner.models.BoardModel
+import com.example.taskassigner.models.TaskModel
 import com.example.taskassigner.utils.Constants
 
 class TaskListActivity : BaseActivity(), FirestoreClass.GetBoardDetailsCallback {
@@ -41,9 +45,19 @@ class TaskListActivity : BaseActivity(), FirestoreClass.GetBoardDetailsCallback 
     override fun getBoardDetailsSuccess(board: BoardModel) {
         cancelProgressDialog()
         setupActionBar(board.name)
+
+        val addTaskList = TaskModel(resources.getString(R.string.add_list))
+        board.taskModelList.add(addTaskList)
+
+        binding?.rvTaskList?.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        binding?.rvTaskList?.setHasFixedSize(true)
+
+        val adapter = TaskListItemsAdapter(this, board.taskModelList)
+        binding?.rvTaskList?.adapter = adapter
     }
 
     override fun getBoardDetailsFailed(error: String?) {
         cancelProgressDialog()
+        Log.i("Error occurred", error.toString())
     }
 }
