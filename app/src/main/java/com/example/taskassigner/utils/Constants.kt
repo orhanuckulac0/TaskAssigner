@@ -9,4 +9,5 @@ object Constants{
     const val IMAGE: String = "image"
     const val MOBILE: String = "mobile"
     const val ASSIGNED_TO: String = "assignedTo"
+    const val DOCUMENT_ID: String = "documentId"
 }

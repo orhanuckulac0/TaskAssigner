@@ -40,13 +40,17 @@ open class BoardItemsAdapter(private val context: Context,
 
         holder.itemView.setOnClickListener {
             if (onClickListener != null){
-                onClickListener!!.onclick(position, model)
+                onClickListener!!.onClick(position, model)
             }
         }
     }
 
     interface OnClickListener{
-        fun onclick(position: Int, model: BoardModel)
+        fun onClick(position: Int, model: BoardModel)
+    }
+
+    fun setOnClickListener(onClickListener: OnClickListener){
+        this.onClickListener = onClickListener
     }
 
     override fun getItemCount(): Int {

@@ -102,6 +102,16 @@ class MainActivity :
             val adapter = BoardItemsAdapter(this, boardsList)
             rvBoardsList.adapter = adapter
 
+            // setup onClickListener to each adapter item
+            adapter.setOnClickListener(object: BoardItemsAdapter.OnClickListener {
+                override fun onClick(position: Int, model: BoardModel) {
+                    val intent = Intent(this@MainActivity, TaskListActivity::class.java)
+                    // pass the current clicked documentID to get its details on TaskListActivity
+                    intent.putExtra(Constants.DOCUMENT_ID, model.documentId)
+                    startActivity(intent)
+                }
+            })
+
             // divider between recycler view items
             val dividerItemDecoration =
                 DividerItemDecoration(rvBoardsList.context, layoutManager.orientation)

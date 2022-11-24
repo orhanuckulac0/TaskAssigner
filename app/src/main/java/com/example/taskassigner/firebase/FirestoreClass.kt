@@ -3,6 +3,7 @@ package com.example.taskassigner.firebase
 import android.util.Log
 import com.example.taskassigner.activities.BaseActivity
 import com.example.taskassigner.models.BoardModel
+import com.example.taskassigner.models.TaskModel
 import com.example.taskassigner.models.UserModel
 import com.example.taskassigner.utils.Constants
 import com.google.firebase.auth.FirebaseAuth
@@ -105,6 +106,21 @@ class FirestoreClass: BaseActivity() {
             }
     }
 
+    fun getBoardDetails(callback: GetBoardDetailsCallback, documentId: String){
+        mFireStore.collection(Constants.BOARDS)
+            .document(documentId)
+            .get()
+            .addOnSuccessListener { document ->
+                Log.i(callback.javaClass.simpleName, document.toString())
+
+                val boardDetails = document.toObject(BoardModel::class.java)
+                callback.getBoardDetailsSuccess(boardDetails!!)
+
+            }.addOnFailureListener { e->
+                callback.getBoardDetailsFailed(e.toString())
+            }
+    }
+
     fun getCurrentUserId(): String {
         val currentUser = FirebaseAuth.getInstance().currentUser
         var currentUserID = ""
@@ -137,5 +153,10 @@ class FirestoreClass: BaseActivity() {
     interface GetBoardsListCallback {
         fun getBoardsSuccess(boardsList: ArrayList<BoardModel>)
         fun getBoardsFailed(error: String?)
+    }
+
+    interface GetBoardDetailsCallback {
+        fun getBoardDetailsSuccess(board: BoardModel)
+        fun getBoardDetailsFailed(error: String?)
     }
 }
