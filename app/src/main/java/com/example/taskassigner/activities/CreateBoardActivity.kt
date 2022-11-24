@@ -5,11 +5,9 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
 import android.provider.Settings
-import android.text.TextUtils
 import android.util.Log
 import android.webkit.MimeTypeMap
 import android.widget.Toast
@@ -180,11 +178,6 @@ class CreateBoardActivity : BaseActivity(), FirestoreClass.CreateBoardCallback {
             )
 
             FirestoreClass().createBoard(this, board)
-        }else{
-            Toast.makeText(this,
-                "An unknown error has occurred. Please try again.",
-                Toast.LENGTH_LONG
-            ).show()
         }
     }
 
