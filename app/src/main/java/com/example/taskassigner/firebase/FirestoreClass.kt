@@ -3,7 +3,6 @@ package com.example.taskassigner.firebase
 import android.util.Log
 import com.example.taskassigner.activities.BaseActivity
 import com.example.taskassigner.models.BoardModel
-import com.example.taskassigner.models.TaskModel
 import com.example.taskassigner.models.UserModel
 import com.example.taskassigner.utils.Constants
 import com.google.firebase.auth.FirebaseAuth
@@ -113,11 +112,28 @@ class FirestoreClass: BaseActivity() {
             .addOnSuccessListener { document ->
                 Log.i(callback.javaClass.simpleName, document.toString())
 
-                val boardDetails = document.toObject(BoardModel::class.java)
-                callback.getBoardDetailsSuccess(boardDetails!!)
+                val boardDetails = document.toObject(BoardModel::class.java)!!
+                boardDetails.documentId = document.id
+                callback.getBoardDetailsSuccess(boardDetails)
 
             }.addOnFailureListener { e->
                 callback.getBoardDetailsFailed(e.toString())
+            }
+    }
+
+    fun addUpdateTaskList(callback: AddUpdateTaskListCallback, board: BoardModel){
+        val taskListHashMap = HashMap<String, Any>()
+        taskListHashMap[Constants.TASK_MODEL_LIST] = board.taskModelList
+
+        mFireStore.collection(Constants.BOARDS)
+            .document(board.documentId)
+            .update(taskListHashMap)
+            .addOnSuccessListener {
+                Log.e(callback.javaClass.simpleName, "Tasklist updated successfully")
+                callback.addUpdateTaskListSuccess()
+
+            }.addOnFailureListener { e->
+                callback.addUpdateTaskListFailed(e.toString())
             }
     }
 
@@ -158,5 +174,10 @@ class FirestoreClass: BaseActivity() {
     interface GetBoardDetailsCallback {
         fun getBoardDetailsSuccess(board: BoardModel)
         fun getBoardDetailsFailed(error: String?)
+    }
+
+    interface AddUpdateTaskListCallback {
+        fun addUpdateTaskListSuccess()
+        fun addUpdateTaskListFailed(error: String?)
     }
 }

@@ -11,9 +11,12 @@ import com.example.taskassigner.models.BoardModel
 import com.example.taskassigner.models.TaskModel
 import com.example.taskassigner.utils.Constants
 
-class TaskListActivity : BaseActivity(), FirestoreClass.GetBoardDetailsCallback {
+class TaskListActivity : BaseActivity(),
+    FirestoreClass.GetBoardDetailsCallback,
+    FirestoreClass.AddUpdateTaskListCallback {
     private var binding: ActivityTaskListBinding? = null
     private var boardDocumentId = ""
+    private lateinit var mBoardDetails: BoardModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,13 +31,13 @@ class TaskListActivity : BaseActivity(), FirestoreClass.GetBoardDetailsCallback 
         FirestoreClass().getBoardDetails(this, boardDocumentId)
     }
 
-    private fun setupActionBar(title: String){
+    private fun setupActionBar(){
         setSupportActionBar(binding?.toolbarTaskListActivity)
         val actionBar = supportActionBar
         if (actionBar != null){
             actionBar.setDisplayHomeAsUpEnabled(true)
             actionBar.setHomeAsUpIndicator(R.drawable.ic_white_color_arrow_24dp)
-            actionBar.title = title
+            actionBar.title = mBoardDetails.name
 
             binding?.toolbarTaskListActivity?.setNavigationOnClickListener {
                 onBackPressedDispatcher.onBackPressed()
@@ -42,10 +45,36 @@ class TaskListActivity : BaseActivity(), FirestoreClass.GetBoardDetailsCallback 
         }
     }
 
-    override fun getBoardDetailsSuccess(board: BoardModel) {
-        cancelProgressDialog()
-        setupActionBar(board.name)
+    fun createTaskList(taskListName: String){
+        // create a new task
+        val task = TaskModel(taskListName, FirestoreClass().getCurrentUserId())
+        mBoardDetails.taskModelList.add(0, task)
+        mBoardDetails.taskModelList.removeAt(mBoardDetails.taskModelList.size - 1)
 
+        showProgressDialog(resources.getString(R.string.please_wait))
+        FirestoreClass().addUpdateTaskList(this, mBoardDetails)
+    }
+
+    override fun addUpdateTaskListSuccess(){
+        cancelProgressDialog()
+
+        showProgressDialog(resources.getString(R.string.please_wait))
+        FirestoreClass().getBoardDetails(this, mBoardDetails.documentId)
+    }
+
+    override fun addUpdateTaskListFailed(error: String?) {
+        cancelProgressDialog()
+        Log.e("Error creating board", error.toString())
+    }
+
+    override fun getBoardDetailsSuccess(board: BoardModel) {
+        // initialize lateinit
+        mBoardDetails = board
+
+        cancelProgressDialog()
+        setupActionBar()
+
+//        dummy element
         val addTaskList = TaskModel(resources.getString(R.string.add_list))
         board.taskModelList.add(addTaskList)
 
