@@ -228,13 +228,14 @@ class ProfileActivity : BaseActivity(),
     override fun updateDataLoadSuccess() {
         Toast.makeText(this,"Profile details are updated.", Toast.LENGTH_LONG).show()
         cancelProgressDialog()
-        // return activity result code to match it with result launcher
+        // set result for resultLauncherForProfileUpdate
         setResult(Activity.RESULT_OK)
         finish()
     }
 
     override fun updateDataLoadFailed(error: String?) {
         cancelProgressDialog()
+        // set result for resultLauncherForProfileUpdate
         setResult(Activity.RESULT_CANCELED)
         finish()
     }

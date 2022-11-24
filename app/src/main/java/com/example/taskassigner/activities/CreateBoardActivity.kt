@@ -1,6 +1,7 @@
 package com.example.taskassigner.activities
 
 import android.Manifest
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -29,7 +30,7 @@ class CreateBoardActivity : BaseActivity(), FirestoreClass.CreateBoardCallback {
     private var binding: ActivityCreateBoardBinding? = null
     private var mSelectedBoardImageFileUri: Uri? = null
     private lateinit var mUserName: String
-    private lateinit var mBoardImageURL: String
+    private var mBoardImageURL: String = ""
 
     private val openGalleryLauncher: ActivityResultLauncher<Intent> =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()){
@@ -188,11 +189,11 @@ class CreateBoardActivity : BaseActivity(), FirestoreClass.CreateBoardCallback {
     // make board image and title required
     private fun validateBoardCreation(): Boolean{
         return when {
-            mSelectedBoardImageFileUri == null -> {
-                cancelProgressDialog()
-                Toast.makeText(this, "Please upload an image.", Toast.LENGTH_LONG).show()
-                false
-            }
+//            mSelectedBoardImageFileUri == null -> {
+//                cancelProgressDialog()
+//                Toast.makeText(this, "Please upload an image.", Toast.LENGTH_LONG).show()
+//                false
+//            }
             binding?.etBoardName?.text.isNullOrEmpty() ->{
                 cancelProgressDialog()
                 Toast.makeText(this, "Please enter a name.", Toast.LENGTH_LONG).show()
@@ -203,14 +204,26 @@ class CreateBoardActivity : BaseActivity(), FirestoreClass.CreateBoardCallback {
         }
     }
 
-
     override fun createBoardSuccess() {
         Toast.makeText(this@CreateBoardActivity, "Board created successfully.", Toast.LENGTH_LONG).show()
         cancelProgressDialog()
+        // set result for resultLauncherForCreateBoard
+        setResult(Activity.RESULT_OK)
         finish()
     }
 
     override fun createBoardFailed(error: String?) {
-        TODO("Not yet implemented")
+        cancelProgressDialog()
+        Log.i("Error has occurred", error.toString())
+        // set result for resultLauncherForCreateBoard
+        setResult(Activity.RESULT_CANCELED)
+        finish()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (binding != null){
+            binding = null
+        }
     }
 }

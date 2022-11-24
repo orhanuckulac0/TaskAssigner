@@ -1,7 +1,7 @@
 package com.example.taskassigner.firebase
 
 import android.util.Log
-import android.widget.Toast
+import com.example.taskassigner.activities.BaseActivity
 import com.example.taskassigner.models.BoardModel
 import com.example.taskassigner.models.UserModel
 import com.example.taskassigner.utils.Constants
@@ -9,7 +9,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 
-class FirestoreClass {
+class FirestoreClass: BaseActivity() {
 
     private val mFireStore = FirebaseFirestore.getInstance()
 
@@ -22,6 +22,7 @@ class FirestoreClass {
                 callback.userRegisteredSuccess()
             }.addOnFailureListener {
                 e->
+                callback.userRegistrationFailure(e.toString())
                 Log.e(callback.javaClass.simpleName, "Error", e)
             }
     }
@@ -41,6 +42,7 @@ class FirestoreClass {
 
             }.addOnFailureListener {
                     e->
+                callback.userDataLoadFailed(e.toString())
                 Log.e(callback.javaClass.simpleName, "Error", e)
             }
     }
@@ -56,6 +58,7 @@ class FirestoreClass {
 
             }.addOnFailureListener {
                     e->
+                callback.updateDataLoadFailed(e.toString())
                 Log.e(callback.javaClass.simpleName, "Error", e)
             }
     }
@@ -73,6 +76,31 @@ class FirestoreClass {
 
             }.addOnFailureListener {
                     e->
+                callback.createBoardFailed(e.toString())
+                Log.e(callback.javaClass.simpleName, "Error", e)
+            }
+    }
+
+    fun getBoardsList(callback: GetBoardsListCallback){
+
+        // get the board assigned to the current user id
+        mFireStore.collection(Constants.BOARDS)
+            .whereArrayContains(Constants.ASSIGNED_TO, getCurrentUserId())
+            .get()
+            .addOnSuccessListener { document ->
+
+                val boardsList: ArrayList<BoardModel> = ArrayList()
+                for (i in document.documents){
+                    val board = i.toObject(BoardModel::class.java)!!
+                    board.documentId = i.id
+                    boardsList.add(board)
+                }
+
+                Log.e(callback.javaClass.simpleName, "Board fetched successfully.")
+                callback.getBoardsSuccess(boardsList)
+
+            }.addOnFailureListener { e->
+                callback.getBoardsFailed(e.toString())
                 Log.e(callback.javaClass.simpleName, "Error", e)
             }
     }
@@ -104,5 +132,10 @@ class FirestoreClass {
     interface CreateBoardCallback {
         fun createBoardSuccess()
         fun createBoardFailed(error: String?)
+    }
+
+    interface GetBoardsListCallback {
+        fun getBoardsSuccess(boardsList: ArrayList<BoardModel>)
+        fun getBoardsFailed(error: String?)
     }
 }

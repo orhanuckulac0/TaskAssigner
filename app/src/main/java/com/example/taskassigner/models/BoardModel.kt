@@ -7,14 +7,16 @@ data class BoardModel(
     var name: String = "",
     var image: String = "",
     var createdBy: String = "",
-    var assignedTo: ArrayList<String> = ArrayList()
+    var assignedTo: ArrayList<String> = ArrayList(),
+    var documentId: String = ""
 ): Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readString()!!,
         parcel.readString()!!,
         parcel.readString()!!,
         parcel.createStringArrayList()!!,
-    ) {
+        parcel.readString()!!
+        ) {
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -22,6 +24,7 @@ data class BoardModel(
         parcel.writeString(image)
         parcel.writeString(createdBy)
         parcel.writeStringList(assignedTo)
+        parcel.writeString(documentId)
     }
 
     override fun describeContents(): Int {

@@ -5,14 +5,20 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
+import android.view.View
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.taskassigner.R
+import com.example.taskassigner.adapters.BoardItemsAdapter
 import com.example.taskassigner.databinding.ActivityMainBinding
 import com.example.taskassigner.firebase.FirestoreClass
+import com.example.taskassigner.models.BoardModel
 import com.example.taskassigner.models.UserModel
 import com.example.taskassigner.utils.Constants
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -24,19 +30,32 @@ import com.google.firebase.ktx.Firebase
 class MainActivity :
     BaseActivity(),
     NavigationView.OnNavigationItemSelectedListener,
-    FirestoreClass.UserDataLoadCallback
+    FirestoreClass.UserDataLoadCallback,
+        FirestoreClass.GetBoardsListCallback
 {
 
     private var binding: ActivityMainBinding? = null
     private lateinit var mUserName: String
 
-    private var resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+    private var resultLauncherForProfileUpdate = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             result ->
         if (result.resultCode == Activity.RESULT_OK) {
             // There are no request codes
             // refresh the user data
             FirestoreClass().loadUserData(this)
-            toggleDrawer()
+            binding?.drawerLayout!!.closeDrawer(GravityCompat.START)
+        }else{
+            Log.e("Error", "Cancelled")
+        }
+    }
+
+    private var resultLauncherForCreateBoard = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            // There are no request codes
+            // refresh the UI with new boards
+            FirestoreClass().getBoardsList(this)
+            binding?.drawerLayout!!.closeDrawer(GravityCompat.START)
         }else{
             Log.e("Error", "Cancelled")
         }
@@ -51,14 +70,48 @@ class MainActivity :
         binding?.navView?.setNavigationItemSelectedListener(this)
 
         FirestoreClass().loadUserData(this)
+        FirestoreClass().getBoardsList(this)
+        showProgressDialog(resources.getString(R.string.please_wait))
+
 
         // setup intent for fab
         findViewById<FloatingActionButton>(R.id.fabAddBoard).setOnClickListener {
             val intent = Intent(this@MainActivity, CreateBoardActivity::class.java)
             intent.putExtra(Constants.NAME, mUserName)
-            startActivity(intent)
+            resultLauncherForCreateBoard.launch(intent)
         }
+    }
 
+    // on callback success result, populate the UI with boardsList fetched from Firestore
+    private fun populateBoardsListToUI(boardsList: ArrayList<BoardModel>){
+
+        val rvBoardsList = findViewById<RecyclerView>(R.id.rvBoardsList)
+        val tvNoBoardsAvailable = findViewById<TextView>(R.id.tvNoBoardsAvailable)
+
+        if (boardsList.size > 0){
+
+            rvBoardsList.visibility = View.VISIBLE
+            tvNoBoardsAvailable.visibility = View.GONE
+
+            // setup layout
+            val layoutManager = LinearLayoutManager(this)
+            rvBoardsList.layoutManager = LinearLayoutManager(this)
+            rvBoardsList.setHasFixedSize(true)
+
+            // setup adapter
+            val adapter = BoardItemsAdapter(this, boardsList)
+            rvBoardsList.adapter = adapter
+
+            // divider between recycler view items
+            val dividerItemDecoration =
+                DividerItemDecoration(rvBoardsList.context, layoutManager.orientation)
+            rvBoardsList.addItemDecoration(dividerItemDecoration)
+
+        }else{
+            rvBoardsList.visibility = View.GONE
+            tvNoBoardsAvailable.visibility = View.VISIBLE
+        }
+        cancelProgressDialog()
     }
 
     private fun setupActionBar(){
@@ -93,7 +146,7 @@ class MainActivity :
             R.id.navMyProfile -> {
                 val intent = Intent(this, ProfileActivity::class.java)
                 // start the activity for result
-                resultLauncher.launch(intent)
+                resultLauncherForProfileUpdate.launch(intent)
             }
             R.id.navSignOut -> {
                 Firebase.auth.signOut()
@@ -122,7 +175,17 @@ class MainActivity :
     }
 
     override fun userDataLoadFailed(error: String?) {
-        TODO("Not yet implemented")
+        cancelProgressDialog()
+        Log.i("Error occurred", error.toString())
+    }
+
+    // get boards from Firestore callback
+    override fun getBoardsSuccess(boardsList: ArrayList<BoardModel>) {
+        populateBoardsListToUI(boardsList)
+    }
+
+    override fun getBoardsFailed(error: String?) {
+        Log.i("Fetch BoardsList Error", "$error")
     }
 
     override fun onDestroy() {

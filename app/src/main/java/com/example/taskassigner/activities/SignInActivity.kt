@@ -131,7 +131,8 @@ class SignInActivity : BaseActivity(), FirestoreClass.UserDataLoadCallback {
     }
 
     override fun userDataLoadFailed(error: String?) {
-        TODO("Not yet implemented")
+        cancelProgressDialog()
+        Log.i("Error occurred", error.toString())
     }
 
     override fun onDestroy() {
