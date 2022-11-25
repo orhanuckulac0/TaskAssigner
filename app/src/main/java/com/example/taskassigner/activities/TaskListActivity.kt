@@ -57,7 +57,7 @@ class TaskListActivity : BaseActivity(),
     }
 
     fun updateTaskList(position: Int, taskListName: String, model: Task){
-        val task = Task(taskListName, model.createdBy)
+        val task = Task(taskListName, model.createdBy, model.cards)
         mBoardDetails.taskList[position] = task
         mBoardDetails.taskList.removeAt(mBoardDetails.taskList.size -1 )
 

@@ -8,7 +8,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.LayoutManager
 import com.example.taskassigner.activities.TaskListActivity
 import com.example.taskassigner.databinding.ItemTaskBinding
 import com.example.taskassigner.models.Task
@@ -41,6 +43,8 @@ open class TaskListItemsAdapter(private val context: Context,
         val etTaskListName = binding.etTaskListName
         val etEditTaskListName = binding.etEditTaskListName
         val etCardName = binding.etCardName
+
+        val rvCardList = binding.rvCardList
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -158,6 +162,11 @@ open class TaskListItemsAdapter(private val context: Context,
                 Toast.makeText(context, "Please Enter List name", Toast.LENGTH_LONG).show()
             }
         }
+
+        // setup cards recyclerview with CardsListItemsAdapter
+        holder.rvCardList.layoutManager = LinearLayoutManager(context)
+        holder.rvCardList.setHasFixedSize(true)
+        holder.rvCardList.adapter = CardListItemsAdapter(context, model.cards)
     }
 
     override fun getItemCount(): Int {
