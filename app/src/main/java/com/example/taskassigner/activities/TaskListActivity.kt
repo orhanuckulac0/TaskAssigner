@@ -55,6 +55,25 @@ class TaskListActivity : BaseActivity(),
         FirestoreClass().addUpdateTaskList(this, mBoardDetails)
     }
 
+    fun updateTaskList(position: Int, taskListName: String, model: TaskModel){
+        val task = TaskModel(taskListName, model.createdBy)
+        mBoardDetails.taskModelList[position] = task
+        mBoardDetails.taskModelList.removeAt(mBoardDetails.taskModelList.size -1 )
+
+        showProgressDialog(resources.getString(R.string.please_wait))
+        FirestoreClass().addUpdateTaskList(this, mBoardDetails)
+    }
+
+    fun deleteTaskList(position: Int){
+        mBoardDetails.taskModelList.removeAt(position)
+        mBoardDetails.taskModelList.removeAt(mBoardDetails.taskModelList.size -1 )
+
+        showProgressDialog(resources.getString(R.string.please_wait))
+
+        // update the whole board
+        FirestoreClass().addUpdateTaskList(this, mBoardDetails)
+    }
+
     override fun addUpdateTaskListSuccess(){
         cancelProgressDialog()
 

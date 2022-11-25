@@ -1,5 +1,6 @@
 package com.example.taskassigner.adapters
 
+import android.app.AlertDialog
 import android.content.Context
 import android.content.res.Resources
 import android.view.LayoutInflater
@@ -18,14 +19,23 @@ open class TaskListItemsAdapter(private val context: Context,
 
     class ViewHolder(binding: ItemTaskBinding) : RecyclerView.ViewHolder(binding.root){
         val tvAddTaskList = binding.tvAddTaskList
-        val llTaskItem = binding.llTaskItem
         val tvTaskListTitle = binding.tvTaskListTitle
+
+        val llTaskItem = binding.llTaskItem
+        val llTitleView = binding.llTitleView
+
         val cvAddTaskListName = binding.cvAddTaskListName
+        val cvEditTaskListName = binding.cvEditTaskListName
 
         val ibDoneListName = binding.ibDoneListName
         val ibCloseListName = binding.ibCloseListName
+        val ibEditListName = binding.ibEditListName
+        val ibCloseEditableView = binding.ibCloseEditableView
+        val ibDoneEditListName = binding.ibDoneEditListName
+        val ibDeleteList = binding.ibDeleteList
 
         val etTaskListName = binding.etTaskListName
+        val etEditTaskListName = binding.etEditTaskListName
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -83,12 +93,67 @@ open class TaskListItemsAdapter(private val context: Context,
             }
         }
 
+        // when clicked to edit button
+        holder.ibEditListName.setOnClickListener {
+            holder.etEditTaskListName.setText(model.title)
+
+            holder.llTitleView.visibility = View.GONE
+            holder.cvEditTaskListName.visibility = View.VISIBLE
+        }
 
 
+        // closing the edit current list name UI
+        holder.ibCloseEditableView.setOnClickListener {
+            holder.llTitleView.visibility = View.VISIBLE
+            holder.cvEditTaskListName.visibility = View.GONE
+        }
+
+        // update the current list
+        holder.ibDoneEditListName.setOnClickListener {
+            val editedListName = holder.etEditTaskListName.text.toString()
+            if (editedListName.isNotEmpty()){
+                if (context is TaskListActivity){
+                    holder.llTitleView.visibility = View.VISIBLE
+                    holder.cvEditTaskListName.visibility = View.GONE
+                    context.updateTaskList(position, editedListName ,model)
+                }
+            }else{
+                Toast.makeText(context, "Please Enter List name", Toast.LENGTH_LONG).show()
+            }
+        }
+
+        // delete the current list
+        holder.ibDeleteList.setOnClickListener {
+            alertDialogForDeleteList(position, model.title)
+        }
     }
 
     override fun getItemCount(): Int {
         return list.size
+    }
+
+    private fun alertDialogForDeleteList(position: Int, title: String){
+        val builder = AlertDialog.Builder(context)
+        builder.setTitle("Alert")
+        builder.setMessage("Are you sure you want to delete $title?")
+        builder.setIcon(android.R.drawable.ic_dialog_alert)
+
+        builder.setPositiveButton("Yes") { dialogInterface, which ->
+            dialogInterface.dismiss()
+
+            // delete the current TaskList
+            if (context is TaskListActivity){
+                context.deleteTaskList(position)
+                Toast.makeText(context, "List Deleted", Toast.LENGTH_LONG).show()
+            }
+        }
+
+        builder.setNegativeButton("No") { dialogInterface, which->
+            dialogInterface.dismiss()
+        }
+        val alertDialog: AlertDialog = builder.create()
+        alertDialog.setCancelable(false)
+        alertDialog.show()
     }
 
     // allows us to get the density of the screen and convert it in to INT
