@@ -1,7 +1,10 @@
 package com.example.taskassigner.activities
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.taskassigner.R
 import com.example.taskassigner.adapters.TaskListItemsAdapter
@@ -44,6 +47,21 @@ class TaskListActivity : BaseActivity(),
                 onBackPressedDispatcher.onBackPressed()
             }
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_members, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when(item.itemId){
+            R.id.actionMembers -> {
+                val intent = Intent(this@TaskListActivity, MembersActivity::class.java)
+                startActivity(intent)
+            }
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     fun createTaskList(taskListName: String){
