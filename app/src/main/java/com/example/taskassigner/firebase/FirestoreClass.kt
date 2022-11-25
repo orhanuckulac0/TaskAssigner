@@ -137,6 +137,29 @@ class FirestoreClass: BaseActivity() {
             }
     }
 
+    fun getAssignedMembersList(callback: GetAssignedMembersList, assignedTo: ArrayList<String>){
+        // get users in users collection
+        // get users where assignedTo string == id string --- which is userid on Firestore
+        mFireStore.collection(Constants.USERS)
+            .whereIn(Constants.USER_ID, assignedTo)
+            .get()
+            .addOnSuccessListener {
+                    document->
+                Log.i(callback.javaClass.simpleName, document.documents.toString())
+                val usersList: ArrayList<User> = ArrayList()
+                for (user in document.documents){
+                    val userObj = user.toObject(User::class.java)!!
+                    usersList.add(userObj)
+                }
+
+                callback.getAssignedMembersListSuccess(usersList)
+
+            }.addOnFailureListener {
+                e->
+                callback.getAssignedMembersListFailed(e.toString())
+            }
+    }
+
     fun getCurrentUserId(): String {
         val currentUser = FirebaseAuth.getInstance().currentUser
         var currentUserID = ""
@@ -179,5 +202,10 @@ class FirestoreClass: BaseActivity() {
     interface AddUpdateTaskListCallback {
         fun addUpdateTaskListSuccess()
         fun addUpdateTaskListFailed(error: String?)
+    }
+
+    interface GetAssignedMembersList {
+        fun getAssignedMembersListSuccess(usersList: ArrayList<User>)
+        fun getAssignedMembersListFailed(error: String?)
     }
 }
