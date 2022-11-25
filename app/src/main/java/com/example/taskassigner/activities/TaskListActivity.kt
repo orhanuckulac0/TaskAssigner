@@ -57,7 +57,9 @@ class TaskListActivity : BaseActivity(),
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when(item.itemId){
             R.id.actionMembers -> {
+                // pass board details to MembersActivity
                 val intent = Intent(this@TaskListActivity, MembersActivity::class.java)
+                intent.putExtra(Constants.BOARD_DETAIL, mBoardDetails)
                 startActivity(intent)
             }
         }
