@@ -7,11 +7,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.taskassigner.R
 import com.example.taskassigner.databinding.ItemBoardBinding
-import com.example.taskassigner.models.BoardModel
+import com.example.taskassigner.models.Board
 
 
 open class BoardItemsAdapter(private val context: Context,
-                             private val list: ArrayList<BoardModel>):
+                             private val list: ArrayList<Board>):
     RecyclerView.Adapter<BoardItemsAdapter.ViewHolder>() {
 
     private var onClickListener: OnClickListener? = null
@@ -46,7 +46,7 @@ open class BoardItemsAdapter(private val context: Context,
     }
 
     interface OnClickListener{
-        fun onClick(position: Int, model: BoardModel)
+        fun onClick(position: Int, model: Board)
     }
 
     fun setOnClickListener(onClickListener: OnClickListener){

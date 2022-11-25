@@ -8,7 +8,7 @@ import android.widget.Toast
 import com.example.taskassigner.R
 import com.example.taskassigner.databinding.ActivitySignUpBinding
 import com.example.taskassigner.firebase.FirestoreClass
-import com.example.taskassigner.models.UserModel
+import com.example.taskassigner.models.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
@@ -71,7 +71,7 @@ class SignUpActivity : BaseActivity(), FirestoreClass.UserRegistrationCallback {
                         val firebaseUser: FirebaseUser = auth.currentUser!!
                         val registeredEmail = firebaseUser.email!!
 
-                        val user = UserModel(firebaseUser.uid, name, registeredEmail)  // create collection for the user
+                        val user = User(firebaseUser.uid, name, registeredEmail)  // create collection for the user
                         FirestoreClass().registerUser(this, user)  // create a document for the user on firestore database
 
                     }else if (!task.isSuccessful){

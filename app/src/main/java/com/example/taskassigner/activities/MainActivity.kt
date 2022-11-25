@@ -18,8 +18,8 @@ import com.example.taskassigner.R
 import com.example.taskassigner.adapters.BoardItemsAdapter
 import com.example.taskassigner.databinding.ActivityMainBinding
 import com.example.taskassigner.firebase.FirestoreClass
-import com.example.taskassigner.models.BoardModel
-import com.example.taskassigner.models.UserModel
+import com.example.taskassigner.models.Board
+import com.example.taskassigner.models.User
 import com.example.taskassigner.utils.Constants
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.imageview.ShapeableImageView
@@ -83,7 +83,7 @@ class MainActivity :
     }
 
     // on callback success result, populate the UI with boardsList fetched from Firestore
-    private fun populateBoardsListToUI(boardsList: ArrayList<BoardModel>){
+    private fun populateBoardsListToUI(boardsList: ArrayList<Board>){
 
         val rvBoardsList = findViewById<RecyclerView>(R.id.rvBoardsList)
         val tvNoBoardsAvailable = findViewById<TextView>(R.id.tvNoBoardsAvailable)
@@ -104,7 +104,7 @@ class MainActivity :
 
             // setup onClickListener to each adapter item
             adapter.setOnClickListener(object: BoardItemsAdapter.OnClickListener {
-                override fun onClick(position: Int, model: BoardModel) {
+                override fun onClick(position: Int, model: Board) {
                     val intent = Intent(this@MainActivity, TaskListActivity::class.java)
                     // pass the current clicked documentID to get its details on TaskListActivity
                     intent.putExtra(Constants.DOCUMENT_ID, model.documentId)
@@ -170,7 +170,7 @@ class MainActivity :
         return true
     }
 
-    override fun userDataLoadSuccess(user: UserModel) {
+    override fun userDataLoadSuccess(user: User) {
         mUserName = user.name
 
         // set user image and user name on UI
@@ -190,7 +190,7 @@ class MainActivity :
     }
 
     // get boards from Firestore callback
-    override fun getBoardsSuccess(boardsList: ArrayList<BoardModel>) {
+    override fun getBoardsSuccess(boardsList: ArrayList<Board>) {
         populateBoardsListToUI(boardsList)
     }
 

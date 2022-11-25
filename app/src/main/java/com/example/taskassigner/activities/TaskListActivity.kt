@@ -7,8 +7,9 @@ import com.example.taskassigner.R
 import com.example.taskassigner.adapters.TaskListItemsAdapter
 import com.example.taskassigner.databinding.ActivityTaskListBinding
 import com.example.taskassigner.firebase.FirestoreClass
-import com.example.taskassigner.models.BoardModel
-import com.example.taskassigner.models.TaskModel
+import com.example.taskassigner.models.Board
+import com.example.taskassigner.models.Card
+import com.example.taskassigner.models.Task
 import com.example.taskassigner.utils.Constants
 
 class TaskListActivity : BaseActivity(),
@@ -16,7 +17,7 @@ class TaskListActivity : BaseActivity(),
     FirestoreClass.AddUpdateTaskListCallback {
     private var binding: ActivityTaskListBinding? = null
     private var boardDocumentId = ""
-    private lateinit var mBoardDetails: BoardModel
+    private lateinit var mBoardDetails: Board
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,26 +48,59 @@ class TaskListActivity : BaseActivity(),
 
     fun createTaskList(taskListName: String){
         // create a new task
-        val task = TaskModel(taskListName, FirestoreClass().getCurrentUserId())
-        mBoardDetails.taskModelList.add(0, task)
-        mBoardDetails.taskModelList.removeAt(mBoardDetails.taskModelList.size - 1)
+        val task = Task(taskListName, FirestoreClass().getCurrentUserId())
+        mBoardDetails.taskList.add(0, task)
+        mBoardDetails.taskList.removeAt(mBoardDetails.taskList.size - 1)
 
         showProgressDialog(resources.getString(R.string.please_wait))
         FirestoreClass().addUpdateTaskList(this, mBoardDetails)
     }
 
-    fun updateTaskList(position: Int, taskListName: String, model: TaskModel){
-        val task = TaskModel(taskListName, model.createdBy)
-        mBoardDetails.taskModelList[position] = task
-        mBoardDetails.taskModelList.removeAt(mBoardDetails.taskModelList.size -1 )
+    fun updateTaskList(position: Int, taskListName: String, model: Task){
+        val task = Task(taskListName, model.createdBy)
+        mBoardDetails.taskList[position] = task
+        mBoardDetails.taskList.removeAt(mBoardDetails.taskList.size -1 )
 
         showProgressDialog(resources.getString(R.string.please_wait))
         FirestoreClass().addUpdateTaskList(this, mBoardDetails)
     }
 
     fun deleteTaskList(position: Int){
-        mBoardDetails.taskModelList.removeAt(position)
-        mBoardDetails.taskModelList.removeAt(mBoardDetails.taskModelList.size -1 )
+        mBoardDetails.taskList.removeAt(position)
+        mBoardDetails.taskList.removeAt(mBoardDetails.taskList.size -1 )
+
+        showProgressDialog(resources.getString(R.string.please_wait))
+
+        // update the whole board
+        FirestoreClass().addUpdateTaskList(this, mBoardDetails)
+    }
+
+    fun addCardToTaskList(position: Int, cardName: String){
+        mBoardDetails.taskList.removeAt(mBoardDetails.taskList.size -1 )
+
+        val cardAssignedUsersList: ArrayList<String> = ArrayList()
+        cardAssignedUsersList.add(FirestoreClass().getCurrentUserId())
+
+        val card = Card(
+            cardName,
+            FirestoreClass().getCurrentUserId(),
+            cardAssignedUsersList
+        )
+
+        // if there are other cards, this will be the last one
+        // create cardsList
+        val cardsList = mBoardDetails.taskList[position].cards
+        cardsList.add(card)
+
+        val task = Task(
+            mBoardDetails.taskList[position].title,
+            mBoardDetails.taskList[position].createdBy,
+            cardsList
+        )
+
+        // assign the current position task in taskList
+        // to the task we create right now with the cardsList
+        mBoardDetails.taskList[position] = task
 
         showProgressDialog(resources.getString(R.string.please_wait))
 
@@ -86,7 +120,7 @@ class TaskListActivity : BaseActivity(),
         Log.e("Error creating board", error.toString())
     }
 
-    override fun getBoardDetailsSuccess(board: BoardModel) {
+    override fun getBoardDetailsSuccess(board: Board) {
         // initialize lateinit
         mBoardDetails = board
 
@@ -94,13 +128,13 @@ class TaskListActivity : BaseActivity(),
         setupActionBar()
 
 //        dummy element
-        val addTaskList = TaskModel(resources.getString(R.string.add_list))
-        board.taskModelList.add(addTaskList)
+        val addTaskList = Task(resources.getString(R.string.add_list))
+        board.taskList.add(addTaskList)
 
         binding?.rvTaskList?.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         binding?.rvTaskList?.setHasFixedSize(true)
 
-        val adapter = TaskListItemsAdapter(this, board.taskModelList)
+        val adapter = TaskListItemsAdapter(this, board.taskList)
         binding?.rvTaskList?.adapter = adapter
     }
 

@@ -8,7 +8,7 @@ import android.widget.Toast
 import com.example.taskassigner.R
 import com.example.taskassigner.databinding.ActivitySignInBinding
 import com.example.taskassigner.firebase.FirestoreClass
-import com.example.taskassigner.models.UserModel
+import com.example.taskassigner.models.User
 import com.google.firebase.auth.*
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
@@ -124,7 +124,7 @@ class SignInActivity : BaseActivity(), FirestoreClass.UserDataLoadCallback {
         }
     }
 
-    override fun userDataLoadSuccess(user: UserModel) {
+    override fun userDataLoadSuccess(user: User) {
         cancelProgressDialog()
         startActivity(Intent(this, MainActivity::class.java))
         finish()

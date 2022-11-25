@@ -11,21 +11,23 @@ import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.example.taskassigner.activities.TaskListActivity
 import com.example.taskassigner.databinding.ItemTaskBinding
-import com.example.taskassigner.models.TaskModel
+import com.example.taskassigner.models.Task
 
 open class TaskListItemsAdapter(private val context: Context,
-                                private val list: ArrayList<TaskModel>):
+                                private val list: ArrayList<Task>):
     RecyclerView.Adapter<TaskListItemsAdapter.ViewHolder>() {
 
     class ViewHolder(binding: ItemTaskBinding) : RecyclerView.ViewHolder(binding.root){
         val tvAddTaskList = binding.tvAddTaskList
         val tvTaskListTitle = binding.tvTaskListTitle
+        val tvAddCard = binding.tvAddCard
 
         val llTaskItem = binding.llTaskItem
         val llTitleView = binding.llTitleView
 
         val cvAddTaskListName = binding.cvAddTaskListName
         val cvEditTaskListName = binding.cvEditTaskListName
+        val cvAddCard = binding.cvAddCard
 
         val ibDoneListName = binding.ibDoneListName
         val ibCloseListName = binding.ibCloseListName
@@ -33,9 +35,12 @@ open class TaskListItemsAdapter(private val context: Context,
         val ibCloseEditableView = binding.ibCloseEditableView
         val ibDoneEditListName = binding.ibDoneEditListName
         val ibDeleteList = binding.ibDeleteList
+        val ibCloseCardName = binding.ibCloseCardName
+        val ibDoneCardName = binding.ibDoneCardName
 
         val etTaskListName = binding.etTaskListName
         val etEditTaskListName = binding.etEditTaskListName
+        val etCardName = binding.etCardName
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -125,6 +130,33 @@ open class TaskListItemsAdapter(private val context: Context,
         // delete the current list
         holder.ibDeleteList.setOnClickListener {
             alertDialogForDeleteList(position, model.title)
+        }
+
+        // enable add card name cardView
+        holder.tvAddCard.setOnClickListener {
+            holder.tvAddCard.visibility= View.GONE
+            holder.cvAddCard.visibility = View.VISIBLE
+        }
+
+        // close add card cardView
+        holder.ibCloseCardName.setOnClickListener {
+            holder.tvAddCard.visibility= View.VISIBLE
+            holder.cvAddCard.visibility = View.GONE
+        }
+
+        // save card name cardView text
+        holder.ibDoneCardName.setOnClickListener {
+
+            val cardName = holder.etCardName.text.toString()
+            if (cardName.isNotEmpty()){
+                if (context is TaskListActivity){
+                    holder.tvAddCard.visibility= View.VISIBLE
+                    holder.cvAddCard.visibility = View.GONE
+                    context.addCardToTaskList(position, cardName)
+                }
+            }else{
+                Toast.makeText(context, "Please Enter List name", Toast.LENGTH_LONG).show()
+            }
         }
     }
 

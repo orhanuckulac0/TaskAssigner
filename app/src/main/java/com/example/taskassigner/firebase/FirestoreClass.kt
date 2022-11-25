@@ -2,8 +2,8 @@ package com.example.taskassigner.firebase
 
 import android.util.Log
 import com.example.taskassigner.activities.BaseActivity
-import com.example.taskassigner.models.BoardModel
-import com.example.taskassigner.models.UserModel
+import com.example.taskassigner.models.Board
+import com.example.taskassigner.models.User
 import com.example.taskassigner.utils.Constants
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -13,7 +13,7 @@ class FirestoreClass: BaseActivity() {
 
     private val mFireStore = FirebaseFirestore.getInstance()
 
-    fun registerUser(callback: UserRegistrationCallback, userInfo: UserModel){
+    fun registerUser(callback: UserRegistrationCallback, userInfo: User){
         mFireStore.collection(Constants.USERS)
             // create new doc for every user
             .document(getCurrentUserId())
@@ -34,7 +34,7 @@ class FirestoreClass: BaseActivity() {
             .get()
             .addOnSuccessListener { document ->
                 // get logged in user data in User model
-                val loggedInUser = document.toObject(UserModel::class.java)
+                val loggedInUser = document.toObject(User::class.java)
 
                 if (loggedInUser != null){
                     callback.userDataLoadSuccess(loggedInUser)
@@ -63,7 +63,7 @@ class FirestoreClass: BaseActivity() {
             }
     }
 
-    fun createBoard(callback: CreateBoardCallback, board: BoardModel){
+    fun createBoard(callback: CreateBoardCallback, board: Board){
         // create new doc for the board
         mFireStore.collection(Constants.BOARDS)
                 // set random doc id
@@ -89,9 +89,9 @@ class FirestoreClass: BaseActivity() {
             .get()
             .addOnSuccessListener { document ->
 
-                val boardsList: ArrayList<BoardModel> = ArrayList()
+                val boardsList: ArrayList<Board> = ArrayList()
                 for (i in document.documents){
-                    val board = i.toObject(BoardModel::class.java)!!
+                    val board = i.toObject(Board::class.java)!!
                     board.documentId = i.id
                     boardsList.add(board)
                 }
@@ -112,7 +112,7 @@ class FirestoreClass: BaseActivity() {
             .addOnSuccessListener { document ->
                 Log.i(callback.javaClass.simpleName, document.toString())
 
-                val boardDetails = document.toObject(BoardModel::class.java)!!
+                val boardDetails = document.toObject(Board::class.java)!!
                 boardDetails.documentId = document.id
                 callback.getBoardDetailsSuccess(boardDetails)
 
@@ -121,9 +121,9 @@ class FirestoreClass: BaseActivity() {
             }
     }
 
-    fun addUpdateTaskList(callback: AddUpdateTaskListCallback, board: BoardModel){
+    fun addUpdateTaskList(callback: AddUpdateTaskListCallback, board: Board){
         val taskListHashMap = HashMap<String, Any>()
-        taskListHashMap[Constants.TASK_MODEL_LIST] = board.taskModelList
+        taskListHashMap[Constants.TASK_LIST] = board.taskList
 
         mFireStore.collection(Constants.BOARDS)
             .document(board.documentId)
@@ -152,7 +152,7 @@ class FirestoreClass: BaseActivity() {
     }
 
     interface UserDataLoadCallback {
-        fun userDataLoadSuccess(user: UserModel)
+        fun userDataLoadSuccess(user: User)
         fun userDataLoadFailed(error: String?)
     }
 
@@ -167,12 +167,12 @@ class FirestoreClass: BaseActivity() {
     }
 
     interface GetBoardsListCallback {
-        fun getBoardsSuccess(boardsList: ArrayList<BoardModel>)
+        fun getBoardsSuccess(boardsList: ArrayList<Board>)
         fun getBoardsFailed(error: String?)
     }
 
     interface GetBoardDetailsCallback {
-        fun getBoardDetailsSuccess(board: BoardModel)
+        fun getBoardDetailsSuccess(board: Board)
         fun getBoardDetailsFailed(error: String?)
     }
 

@@ -19,7 +19,7 @@ import com.bumptech.glide.Glide
 import com.example.taskassigner.R
 import com.example.taskassigner.databinding.ActivityCreateBoardBinding
 import com.example.taskassigner.firebase.FirestoreClass
-import com.example.taskassigner.models.BoardModel
+import com.example.taskassigner.models.Board
 import com.example.taskassigner.utils.Constants
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
@@ -171,7 +171,7 @@ class CreateBoardActivity : BaseActivity(), FirestoreClass.CreateBoardCallback {
 
             assignedUsersArrayList.add(FirestoreClass().getCurrentUserId())
 
-            val board = BoardModel(
+            val board = Board(
                 name = binding?.etBoardName?.text.toString(),
                 image = mBoardImageURL,
                 createdBy = mUserName,

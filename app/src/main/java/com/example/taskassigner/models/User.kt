@@ -3,7 +3,7 @@ package com.example.taskassigner.models
 import android.os.Parcel
 import android.os.Parcelable
 
-data class UserModel(
+data class User(
     val id: String = "",
     val name: String = "",
     val email: String = "",
@@ -34,12 +34,12 @@ data class UserModel(
         return 0
     }
 
-    companion object CREATOR : Parcelable.Creator<UserModel> {
-        override fun createFromParcel(parcel: Parcel): UserModel {
-            return UserModel(parcel)
+    companion object CREATOR : Parcelable.Creator<User> {
+        override fun createFromParcel(parcel: Parcel): User {
+            return User(parcel)
         }
 
-        override fun newArray(size: Int): Array<UserModel?> {
+        override fun newArray(size: Int): Array<User?> {
             return arrayOfNulls(size)
         }
     }

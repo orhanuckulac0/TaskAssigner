@@ -19,7 +19,7 @@ import com.bumptech.glide.Glide
 import com.example.taskassigner.R
 import com.example.taskassigner.databinding.ActivityProfileBinding
 import com.example.taskassigner.firebase.FirestoreClass
-import com.example.taskassigner.models.UserModel
+import com.example.taskassigner.models.User
 import com.example.taskassigner.utils.Constants
 import com.google.android.material.imageview.ShapeableImageView
 import com.google.firebase.storage.FirebaseStorage
@@ -33,7 +33,7 @@ class ProfileActivity : BaseActivity(),
 
     private var binding: ActivityProfileBinding? = null
     private var mSelectedImageFileUri: Uri? = null
-    private lateinit var mUserDetails: UserModel
+    private lateinit var mUserDetails: User
     private var mProfileImageURL: String = ""
 
     private val openGalleryLauncher: ActivityResultLauncher<Intent> =
@@ -199,7 +199,7 @@ class ProfileActivity : BaseActivity(),
     }
 
     // to populate view with current user data
-    override fun userDataLoadSuccess(user: UserModel) {
+    override fun userDataLoadSuccess(user: User) {
         // initiate the lateinit mUserDetails with the UserModel this fun receives
         // so that we can use it later on another func for val userHashMap
         mUserDetails = user
