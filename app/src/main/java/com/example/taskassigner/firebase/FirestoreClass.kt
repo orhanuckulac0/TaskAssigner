@@ -160,6 +160,43 @@ class FirestoreClass: BaseActivity() {
             }
     }
 
+    // this fun gets single member details
+    fun getMemberDetails(callback: GetMemberDetailsCallback, email: String){
+        mFireStore.collection(Constants.USERS)
+            .whereEqualTo(Constants.EMAIL, email)
+            .get()
+            .addOnSuccessListener {
+                document->
+                Log.i(callback.javaClass.simpleName, document.documents.toString())
+
+                if (document.documents.size > 0 ){
+                    val user = document.documents[0].toObject(User::class.java)!!
+                    callback.getMemberDetailsCallbackSuccess(user)
+                }else{
+                    callback.getMemberDetailsCallbackNoMemberFound("No such member found.")
+                }
+            }
+    }
+
+    // this fun will update current assignedTo on firestore
+    fun assignMemberToBoard(callback: AssignMemberToBoardCallback, board: Board, user: User){
+        // to update, we need hashmap
+        val assignedToHashMap = HashMap<String, Any>()
+        assignedToHashMap[Constants.ASSIGNED_TO] = board.assignedTo
+
+        mFireStore.collection(Constants.BOARDS)
+            .document(board.documentId)
+            .update(assignedToHashMap)
+
+            .addOnSuccessListener {
+                callback.assignMemberToBoardCallbackSuccess(user)
+
+            }.addOnFailureListener {
+                e->
+                callback.assignMemberToBoardCallbackFailed(e.toString())
+            }
+    }
+
     fun getCurrentUserId(): String {
         val currentUser = FirebaseAuth.getInstance().currentUser
         var currentUserID = ""
@@ -207,5 +244,15 @@ class FirestoreClass: BaseActivity() {
     interface GetAssignedMembersList {
         fun getAssignedMembersListSuccess(usersList: ArrayList<User>)
         fun getAssignedMembersListFailed(error: String?)
+    }
+
+    interface GetMemberDetailsCallback {
+        fun getMemberDetailsCallbackSuccess(user: User)
+        fun getMemberDetailsCallbackFailed(error: String?)
+        fun getMemberDetailsCallbackNoMemberFound(error: String)
+    }
+    interface AssignMemberToBoardCallback {
+        fun assignMemberToBoardCallbackSuccess(user: User)
+        fun assignMemberToBoardCallbackFailed(error: String?)
     }
 }

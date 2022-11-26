@@ -107,6 +107,7 @@ class SignUpActivity : BaseActivity(), FirestoreClass.UserRegistrationCallback {
                         ).show()
                     }
                 }
+            cancelProgressDialog()
         }
     }
 

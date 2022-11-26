@@ -1,8 +1,7 @@
 package com.example.taskassigner.activities
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
-import android.app.Dialog
-import android.content.DialogInterface
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -10,9 +9,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.EditText
-import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.widget.AppCompatEditText
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.taskassigner.R
 import com.example.taskassigner.adapters.MemberListItemsAdapter
@@ -23,7 +20,11 @@ import com.example.taskassigner.models.User
 import com.example.taskassigner.utils.Constants
 
 
-class MembersActivity : BaseActivity(), FirestoreClass.GetAssignedMembersList {
+class MembersActivity : BaseActivity(),
+    FirestoreClass.GetAssignedMembersList,
+    FirestoreClass.GetMemberDetailsCallback,
+    FirestoreClass.AssignMemberToBoardCallback {
+
     private var binding: ActivityMembersBinding? = null
     private lateinit var mBoarDetails: Board
 
@@ -87,7 +88,10 @@ class MembersActivity : BaseActivity(), FirestoreClass.GetAssignedMembersList {
         dialogBuilder.setPositiveButton("Yes") { _, _->
             val email = editText.text.toString()
             if (email.isNotEmpty()){
-                Log.i("works", editText.text.toString())
+                // if email is not empty, start get member detail callback
+                showProgressDialog(resources.getString(R.string.please_wait))
+                FirestoreClass().getMemberDetails(this, email)
+
             }else{
                 Toast.makeText(this,"Please enter an email address.", Toast.LENGTH_LONG).show()
             }
@@ -110,5 +114,39 @@ class MembersActivity : BaseActivity(), FirestoreClass.GetAssignedMembersList {
     override fun getAssignedMembersListFailed(error: String?) {
         cancelProgressDialog()
         Log.e("Error getting usersList", error.toString())
+    }
+
+    // BELOW FOR ADDING NEW MEMBERS TO A TASK CALLBACK RESPONSE
+    override fun getMemberDetailsCallbackSuccess(user: User) {
+        cancelProgressDialog()
+        // add the new member user to assignedTo list
+        mBoarDetails.assignedTo.add(user.id)
+
+        // start the callback for updating firestore db
+        FirestoreClass().assignMemberToBoard(this, mBoarDetails, user)
+
+        // to update UI with new member added
+        FirestoreClass().getAssignedMembersList(this, mBoarDetails.assignedTo)
+    }
+
+    @SuppressLint("LongLogTag")
+    override fun getMemberDetailsCallbackFailed(error: String?) {
+        cancelProgressDialog()
+        Log.i("Error getting member details", error.toString())
+    }
+
+    override fun getMemberDetailsCallbackNoMemberFound(error: String) {
+        cancelProgressDialog()
+        showErrorSnackBar(error)
+    }
+    // // // //
+
+    // TO ADD MEMBER TO DB CALLBACK RESPONSE
+    override fun assignMemberToBoardCallbackSuccess(user: User) {
+        Toast.makeText(this, "New Member Added!", Toast.LENGTH_LONG).show()
+    }
+
+    override fun assignMemberToBoardCallbackFailed(error: String?) {
+        Log.i("Error adding member", error.toString())
     }
 }
