@@ -26,7 +26,7 @@ class MembersActivity : BaseActivity(),
     FirestoreClass.AssignMemberToBoardCallback {
 
     private var binding: ActivityMembersBinding? = null
-    private lateinit var mBoarDetails: Board
+    private lateinit var mBoardDetails: Board
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,14 +37,14 @@ class MembersActivity : BaseActivity(),
 
         if (intent.hasExtra(Constants.BOARD_DETAIL)){
             if (Build.VERSION.SDK_INT >= 33) {
-                mBoarDetails = intent.getParcelableExtra(Constants.BOARD_DETAIL, Board::class.java)!!
+                mBoardDetails = intent.getParcelableExtra(Constants.BOARD_DETAIL, Board::class.java)!!
             }else {
-                mBoarDetails = intent.getParcelableExtra(Constants.BOARD_DETAIL)!!
+                mBoardDetails = intent.getParcelableExtra(Constants.BOARD_DETAIL)!!
             }
         }
 
         showProgressDialog(resources.getString(R.string.please_wait))
-        FirestoreClass().getAssignedMembersList(this, mBoarDetails.assignedTo)
+        FirestoreClass().getAssignedMembersList(this, mBoardDetails.assignedTo)
     }
 
     private fun setupActionBar(){
@@ -120,13 +120,13 @@ class MembersActivity : BaseActivity(),
     override fun getMemberDetailsCallbackSuccess(user: User) {
         cancelProgressDialog()
         // add the new member user to assignedTo list
-        mBoarDetails.assignedTo.add(user.id)
+        mBoardDetails.assignedTo.add(user.id)
 
         // start the callback for updating firestore db
-        FirestoreClass().assignMemberToBoard(this, mBoarDetails, user)
+        FirestoreClass().assignMemberToBoard(this, mBoardDetails, user)
 
         // to update UI with new member added
-        FirestoreClass().getAssignedMembersList(this, mBoarDetails.assignedTo)
+        FirestoreClass().getAssignedMembersList(this, mBoardDetails.assignedTo)
     }
 
     @SuppressLint("LongLogTag")
