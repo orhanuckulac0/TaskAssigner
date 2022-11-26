@@ -4,7 +4,7 @@ import android.os.Parcel
 import android.os.Parcelable
 
 data class Card(
-    val name: String = "",
+    var name: String = "",
     val createdBy: String = "",
     val assignedTo: ArrayList<String> = ArrayList()
 ):Parcelable {
