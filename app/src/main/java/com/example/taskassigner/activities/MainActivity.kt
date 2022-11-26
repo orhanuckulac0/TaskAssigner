@@ -36,6 +36,7 @@ class MainActivity :
 
     private var binding: ActivityMainBinding? = null
     private lateinit var mUserName: String
+    private var dividerCreated: Boolean = false
 
     private var resultLauncherForProfileUpdate = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             result ->
@@ -69,10 +70,8 @@ class MainActivity :
         setupActionBar()
         binding?.navView?.setNavigationItemSelectedListener(this)
 
-        FirestoreClass().loadUserData(this)
-        FirestoreClass().getBoardsList(this)
-        showProgressDialog(resources.getString(R.string.please_wait))
-
+        // get user data and board data onResume
+        // so that if new data or board is created user will see the updated UI
 
         // setup intent for fab
         findViewById<FloatingActionButton>(R.id.fabAddBoard).setOnClickListener {
@@ -113,9 +112,15 @@ class MainActivity :
             })
 
             // divider between recycler view items
-            val dividerItemDecoration =
-                DividerItemDecoration(rvBoardsList.context, layoutManager.orientation)
-            rvBoardsList.addItemDecoration(dividerItemDecoration)
+            // keep track if divider is created before or not
+            // because each time screen re-uploads with onResume, divider gets created again
+            // this causes divider color to get thicken
+            if (!dividerCreated){
+                val dividerItemDecoration =
+                    DividerItemDecoration(rvBoardsList.context, layoutManager.orientation)
+                rvBoardsList.addItemDecoration(dividerItemDecoration)
+                dividerCreated = true
+            }
 
         }else{
             rvBoardsList.visibility = View.GONE
@@ -196,6 +201,14 @@ class MainActivity :
 
     override fun getBoardsFailed(error: String?) {
         Log.i("Fetch BoardsList Error", "$error")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        FirestoreClass().loadUserData(this)
+        FirestoreClass().getBoardsList(this)
+        showProgressDialog(resources.getString(R.string.please_wait))
+
     }
 
     override fun onDestroy() {
