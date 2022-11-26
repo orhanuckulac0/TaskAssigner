@@ -166,7 +166,18 @@ open class TaskListItemsAdapter(private val context: Context,
         // setup cards recyclerview with CardsListItemsAdapter
         holder.rvCardList.layoutManager = LinearLayoutManager(context)
         holder.rvCardList.setHasFixedSize(true)
-        holder.rvCardList.adapter = CardListItemsAdapter(context, model.cards)
+        val adapter = CardListItemsAdapter(context, model.cards)
+        holder.rvCardList.adapter = adapter
+
+        adapter.setOnClickListener(object: CardListItemsAdapter.OnClickListener{
+            override fun onClick(cardPosition: Int) {
+                if (context is TaskListActivity){
+                    context.cardDetails(holder.adapterPosition, cardPosition)
+                }
+            }
+        })
+
+
     }
 
     override fun getItemCount(): Int {

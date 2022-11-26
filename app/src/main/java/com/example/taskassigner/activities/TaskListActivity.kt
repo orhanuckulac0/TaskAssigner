@@ -19,7 +19,7 @@ class TaskListActivity : BaseActivity(),
     FirestoreClass.GetBoardDetailsCallback,
     FirestoreClass.AddUpdateTaskListCallback {
     private var binding: ActivityTaskListBinding? = null
-    private var boardDocumentId = ""
+    private lateinit var boardDocumentId: String
     private lateinit var mBoardDetails: Board
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,8 +31,9 @@ class TaskListActivity : BaseActivity(),
             boardDocumentId = intent.getStringExtra(Constants.DOCUMENT_ID).toString()
         }
 
-        showProgressDialog(resources.getString(R.string.please_wait))
-        FirestoreClass().getBoardDetails(this, boardDocumentId)
+        // make get task details callback on onResume function,
+        // so that I can update screen if data is changed when user is on MembersActivity
+        // tested with registerForActivityResult but code is cleaner this way
     }
 
     private fun setupActionBar(){
@@ -61,6 +62,7 @@ class TaskListActivity : BaseActivity(),
                 val intent = Intent(this@TaskListActivity, MembersActivity::class.java)
                 intent.putExtra(Constants.BOARD_DETAIL, mBoardDetails)
                 startActivity(intent)
+                return true
             }
         }
         return super.onOptionsItemSelected(item)
@@ -128,6 +130,10 @@ class TaskListActivity : BaseActivity(),
         FirestoreClass().addUpdateTaskList(this, mBoardDetails)
     }
 
+    fun cardDetails(taskListPosition: Int, cardPosition: Int){
+        startActivity(Intent(this, CardDetailsActivity::class.java))
+    }
+
     override fun addUpdateTaskListSuccess(){
         cancelProgressDialog()
 
@@ -161,5 +167,21 @@ class TaskListActivity : BaseActivity(),
     override fun getBoardDetailsFailed(error: String?) {
         cancelProgressDialog()
         Log.i("Error occurred", error.toString())
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // reload data and UI each time activity opens or user comes back
+        // be sure not to make this callback on onCreate
+        showProgressDialog(resources.getString(R.string.please_wait))
+        FirestoreClass().getBoardDetails(this, boardDocumentId)
+    }
+
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (binding != null){
+            binding = null
+        }
     }
 }

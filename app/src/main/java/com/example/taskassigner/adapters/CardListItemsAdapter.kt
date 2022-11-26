@@ -11,10 +11,11 @@ open class CardListItemsAdapter(private val context: Context,
                                 private val list: ArrayList<Card>)
     : RecyclerView.Adapter<CardListItemsAdapter.ViewHolder>(){
 
+    private var onClickListener: OnClickListener? = null
+
     class ViewHolder(binding: ItemCardBinding) : RecyclerView.ViewHolder(binding.root){
         val tvCardName = binding.tvCardName
         val tvMembersName = binding.tvMembersName
-
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -24,9 +25,23 @@ open class CardListItemsAdapter(private val context: Context,
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val model = list[position]
         holder.tvCardName.text = model.name
+
+        holder.itemView.setOnClickListener{
+            if (onClickListener != null) {
+                onClickListener!!.onClick(position)
+            }
+        }
     }
 
     override fun getItemCount(): Int {
         return list.size
+    }
+
+    fun setOnClickListener(onClickListener: OnClickListener) {
+        this.onClickListener = onClickListener
+    }
+
+    interface OnClickListener {
+        fun onClick(cardPosition: Int)
     }
 }

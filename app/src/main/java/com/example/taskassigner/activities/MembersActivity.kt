@@ -149,4 +149,11 @@ class MembersActivity : BaseActivity(),
     override fun assignMemberToBoardCallbackFailed(error: String?) {
         Log.i("Error adding member", error.toString())
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (binding != null){
+            binding = null
+        }
+    }
 }
