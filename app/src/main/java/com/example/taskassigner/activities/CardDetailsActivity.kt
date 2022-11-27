@@ -16,6 +16,7 @@ import com.example.taskassigner.firebase.FirestoreClass
 import com.example.taskassigner.models.Board
 import com.example.taskassigner.models.Card
 import com.example.taskassigner.models.Task
+import com.example.taskassigner.models.User
 import com.example.taskassigner.utils.Constants
 import java.io.IOException
 
@@ -25,6 +26,7 @@ class CardDetailsActivity : BaseActivity(),
     private var binding: ActivityCardDetailsBinding? = null
     private lateinit var mBoardDetails: Board
     private lateinit var mCurrentCard: Card
+    private lateinit var mMembersDetailList: ArrayList<User>
     private var mTaskListPosition = -1
     private var mCardPosition = -1
     private var mSelectedColor = ""
@@ -106,11 +108,24 @@ class CardDetailsActivity : BaseActivity(),
                 mBoardDetails = intent.getParcelableExtra(Constants.BOARD_DETAIL)!!
             }
         }
+
         if (intent.hasExtra(Constants.TASK_LIST_ITEM_POSITION)) {
             mTaskListPosition = intent.getIntExtra(Constants.TASK_LIST_ITEM_POSITION, -1)
         }
+
         if (intent.hasExtra(Constants.CARD_LIST_ITEM_POSITION)) {
             mCardPosition = intent.getIntExtra(Constants.CARD_LIST_ITEM_POSITION, -1)
+        }
+
+        // get the current members of this list, whom can be assigned to the card
+        if (intent.hasExtra(Constants.BOARD_MEMBERS_LIST)){
+            if (Build.VERSION.SDK_INT >= 33) {
+                mMembersDetailList = intent.getParcelableArrayListExtra(Constants.BOARD_MEMBERS_LIST, User::class.java)!!
+                Log.i("Users", "$mMembersDetailList")
+            }else {
+                mMembersDetailList = intent.getParcelableArrayListExtra(Constants.BOARD_MEMBERS_LIST)!!
+                Log.i("Users", "$mMembersDetailList")
+            }
         }
 
         try {

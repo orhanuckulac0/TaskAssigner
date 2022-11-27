@@ -13,14 +13,19 @@ import com.example.taskassigner.firebase.FirestoreClass
 import com.example.taskassigner.models.Board
 import com.example.taskassigner.models.Card
 import com.example.taskassigner.models.Task
+import com.example.taskassigner.models.User
 import com.example.taskassigner.utils.Constants
+import com.google.firebase.firestore.ktx.firestoreSettings
 
 class TaskListActivity : BaseActivity(),
     FirestoreClass.GetBoardDetailsCallback,
-    FirestoreClass.AddUpdateTaskListCallback {
+    FirestoreClass.AddUpdateTaskListCallback,
+    FirestoreClass.GetAssignedMembersList {
+
     private var binding: ActivityTaskListBinding? = null
     private lateinit var boardDocumentId: String
     private lateinit var mBoardDetails: Board
+    private lateinit var mAssignedMemberDetailList: ArrayList<User>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -135,6 +140,7 @@ class TaskListActivity : BaseActivity(),
         intent.putExtra(Constants.BOARD_DETAIL, mBoardDetails)
         intent.putExtra(Constants.TASK_LIST_ITEM_POSITION, taskListPosition)
         intent.putExtra(Constants.CARD_LIST_ITEM_POSITION, cardPosition)
+        intent.putExtra(Constants.BOARD_MEMBERS_LIST, mAssignedMemberDetailList)
         startActivity(intent)
     }
 
@@ -154,7 +160,6 @@ class TaskListActivity : BaseActivity(),
         // initialize lateinit
         mBoardDetails = board
 
-        cancelProgressDialog()
         setupActionBar()
 
 //        dummy element
@@ -166,11 +171,26 @@ class TaskListActivity : BaseActivity(),
 
         val adapter = TaskListItemsAdapter(this, board.taskList)
         binding?.rvTaskList?.adapter = adapter
+
+        // make callback for members list for this specific document because
+        // mBoardDetails is initialized in this function above
+        FirestoreClass().getAssignedMembersList(this, mBoardDetails.assignedTo)
     }
 
     override fun getBoardDetailsFailed(error: String?) {
         cancelProgressDialog()
         Log.i("Error occurred", error.toString())
+    }
+
+    override fun getAssignedMembersListSuccess(usersList: ArrayList<User>) {
+        mAssignedMemberDetailList = usersList
+        Log.i("members", "$mAssignedMemberDetailList")
+        cancelProgressDialog()
+    }
+
+    override fun getAssignedMembersListFailed(error: String?) {
+        Log.i("Error occurred", error.toString())
+        cancelProgressDialog()
     }
 
     override fun onResume() {
@@ -180,7 +200,6 @@ class TaskListActivity : BaseActivity(),
         showProgressDialog(resources.getString(R.string.please_wait))
         FirestoreClass().getBoardDetails(this, boardDocumentId)
     }
-
 
     override fun onDestroy() {
         super.onDestroy()
