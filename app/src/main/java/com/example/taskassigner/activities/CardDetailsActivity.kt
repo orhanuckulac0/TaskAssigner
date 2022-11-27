@@ -1,6 +1,5 @@
 package com.example.taskassigner.activities
 
-import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.graphics.Color
 import android.os.Build
@@ -12,6 +11,7 @@ import android.widget.Toast
 import com.example.taskassigner.R
 import com.example.taskassigner.databinding.ActivityCardDetailsBinding
 import com.example.taskassigner.dialogs.LabelColorListDialog
+import com.example.taskassigner.dialogs.MembersListDialog
 import com.example.taskassigner.firebase.FirestoreClass
 import com.example.taskassigner.models.Board
 import com.example.taskassigner.models.Card
@@ -31,7 +31,6 @@ class CardDetailsActivity : BaseActivity(),
     private var mCardPosition = -1
     private var mSelectedColor = ""
 
-    @SuppressLint("Range")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityCardDetailsBinding.inflate(layoutInflater)
@@ -42,7 +41,8 @@ class CardDetailsActivity : BaseActivity(),
 
         // populate edit text with current card name
         if (mBoardDetails != null) {
-            binding?.etCardNameDetails?.setText(mCurrentCard.name)
+            val mCurrentCardName = mCurrentCard.name
+            binding?.etCardNameDetails?.setText(mCurrentCardName)
 
             // if color is not selected yet, don't set mSelectedColor
             if (mCurrentCard.labelColor != ""){
@@ -67,6 +67,49 @@ class CardDetailsActivity : BaseActivity(),
         binding?.tvSelectLabelColor?.setOnClickListener {
             showLabelColorsListDialog()
         }
+
+        binding?.tvSelectMembers?.setOnClickListener{
+            membersListDialog()
+        }
+    }
+
+    // get members list and create custom dialog to show members
+    private fun membersListDialog(){
+        // get the string ID's of the assigned users
+        var cardAssignedMembersList = mBoardDetails.taskList[mTaskListPosition].cards[mCardPosition].assignedTo
+
+        // if there are any users in assignedTo
+        if (cardAssignedMembersList.size > 0){
+            // for member user in mMembersDetailList
+            for (i in mMembersDetailList.indices) {
+                // for assigned user in cardAssignedMembersList
+                for (j in cardAssignedMembersList) {
+                    // if member user's id == string ID of the assignedTo user,
+                    if (mMembersDetailList[i].id == j) {
+                        // set member user's selected value to true because It's the same user
+                        mMembersDetailList[i].selected = true
+                    }
+                }
+            }
+
+        }else{
+            // set members' selected values to false
+            for (i in mMembersDetailList.indices) {
+                mMembersDetailList[i].selected = false
+            }
+        }
+
+        // create MembersListDialog object
+        val memberListDialog = object: MembersListDialog(
+            this,
+            mMembersDetailList,
+            resources.getString(R.string.select_members)
+        ){
+            override fun onItemSelected(user: User, acton: String) {
+            // TODO implement the selected members functionality
+            }
+        }
+        memberListDialog.show()
     }
 
     private fun updateCardDetails(){

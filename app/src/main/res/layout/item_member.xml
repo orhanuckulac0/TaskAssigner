@@ -43,6 +43,18 @@
                 android:textColor="@color/secondary_text_color"
                 android:textSize="@dimen/item_member_email_text_size"
                 tools:text="Email" />
+
+            <ImageView
+                android:id="@+id/ivSelectedMember"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|end"
+                android:layout_marginEnd="@dimen/item_label_color_selected_image_marginEnd"
+                android:src="@drawable/ic_vector_done_color_24dp"
+                android:visibility="gone"
+                tools:visibility="visible"
+                />
+
         </LinearLayout>
     </LinearLayout>
 
