@@ -21,4 +21,15 @@
 
     <color name="task_list_action_color">#F7F6FA</color>
     <color name="task_list_title_view_bg_color">#F8F8F8</color>
+
+    <string-array name="label_colors">
+        <item>#43C86F</item>
+        <item>#0C90F1</item>
+        <item>#F72400</item>
+        <item>#7A8089</item>
+        <item>#D57C1D</item>
+        <item>#770000</item>
+        <item>#0022F8</item>
+    </string-array>
+
 </resources>

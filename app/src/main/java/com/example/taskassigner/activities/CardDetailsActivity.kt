@@ -1,6 +1,8 @@
 package com.example.taskassigner.activities
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -9,6 +11,7 @@ import android.view.MenuItem
 import android.widget.Toast
 import com.example.taskassigner.R
 import com.example.taskassigner.databinding.ActivityCardDetailsBinding
+import com.example.taskassigner.dialogs.LabelColorListDialog
 import com.example.taskassigner.firebase.FirestoreClass
 import com.example.taskassigner.models.Board
 import com.example.taskassigner.models.Card
@@ -16,13 +19,17 @@ import com.example.taskassigner.models.Task
 import com.example.taskassigner.utils.Constants
 import java.io.IOException
 
-class CardDetailsActivity : BaseActivity(), FirestoreClass.AddUpdateTaskListCallback {
+class CardDetailsActivity : BaseActivity(),
+    FirestoreClass.AddUpdateTaskListCallback {
+
     private var binding: ActivityCardDetailsBinding? = null
     private lateinit var mBoardDetails: Board
     private lateinit var mCurrentCard: Card
     private var mTaskListPosition = -1
     private var mCardPosition = -1
+    private var mSelectedColor = ""
 
+    @SuppressLint("Range")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityCardDetailsBinding.inflate(layoutInflater)
@@ -34,7 +41,14 @@ class CardDetailsActivity : BaseActivity(), FirestoreClass.AddUpdateTaskListCall
         // populate edit text with current card name
         if (mBoardDetails != null) {
             binding?.etCardNameDetails?.setText(mCurrentCard.name)
+
+            // if color is not selected yet, don't set mSelectedColor
+            if (mCurrentCard.labelColor != ""){
+                mSelectedColor = mCurrentCard.labelColor
+                setColor()
+            }
         }
+
 
         binding?.btnUpdateCardDetails?.setOnClickListener {
             if (binding?.etCardNameDetails?.text.toString().isNotEmpty()){
@@ -48,26 +62,23 @@ class CardDetailsActivity : BaseActivity(), FirestoreClass.AddUpdateTaskListCall
                 ).show()
             }
         }
+        binding?.tvSelectLabelColor?.setOnClickListener {
+            showLabelColorsListDialog()
+        }
     }
 
     private fun updateCardDetails(){
-        // this below can be improved
         val updatedCard = Card(
             binding?.etCardNameDetails?.text.toString(),
             mBoardDetails.taskList[mTaskListPosition].cards[mCardPosition].createdBy,
-            mBoardDetails.taskList[mTaskListPosition].cards[mCardPosition].assignedTo
-        )
+            mBoardDetails.taskList[mTaskListPosition].cards[mCardPosition].assignedTo,
+            mSelectedColor
+            )
 
-        val cardsList: ArrayList<Card> = mBoardDetails.taskList[mTaskListPosition].cards
-        cardsList.removeAt(mCardPosition)
-
-        cardsList.add(updatedCard)
-
-        val taskList: ArrayList<Task> = mBoardDetails.taskList
-        // get rid of he Add Card btn which is a member of taskList
-        taskList.removeAt(taskList.size - 1)
-
-        taskList[mTaskListPosition].cards = cardsList
+        mBoardDetails.taskList[mTaskListPosition].cards[mCardPosition] = updatedCard
+        // this below line is essential
+        // this prevents firestore to create empty list on db
+        mBoardDetails.taskList.removeAt(mBoardDetails.taskList.size -1 )
 
         // make the callback for updating the TaskList and finish activity
         FirestoreClass().addUpdateTaskList(this, mBoardDetails)
@@ -78,7 +89,6 @@ class CardDetailsActivity : BaseActivity(), FirestoreClass.AddUpdateTaskListCall
         cardsList.removeAt(mCardPosition)
 
         val taskList: ArrayList<Task> = mBoardDetails.taskList
-        // get rid of he Add Card btn which is a member of taskList
         taskList.removeAt(taskList.size - 1)
 
         taskList[mTaskListPosition].cards = cardsList
@@ -142,6 +152,35 @@ class CardDetailsActivity : BaseActivity(), FirestoreClass.AddUpdateTaskListCall
         }
             .create()
             .show()
+    }
+
+    // return list of color strings
+    private fun colorsList(): ArrayList<String>{
+        return ArrayList(resources.getStringArray(R.array.label_colors).asList())
+    }
+
+    // set color of the background on TaskListActivity for cards
+    private fun setColor(){
+        binding?.tvSelectLabelColor?.text = ""
+        binding?.tvSelectLabelColor?.setBackgroundColor(Color.parseColor(mSelectedColor))
+    }
+
+    // create an object of the LalColorListDialog class
+    // show the custom dialog for label color picking for cards
+    private fun showLabelColorsListDialog(){
+        val colorsList: ArrayList<String> = colorsList()
+        val listDialog = object : LabelColorListDialog(this,
+            colorsList,
+            resources.getString(R.string.select_color),
+            mSelectedColor
+        ){
+            override fun onItemSelected(color: String) {
+                mSelectedColor = color
+                setColor()
+            }
+        }
+        listDialog.create()
+        listDialog.show()
     }
 
     // setup the menu item for deleting card
