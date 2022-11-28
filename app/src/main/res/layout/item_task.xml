@@ -166,12 +166,6 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvCardList"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="@dimen/task_item_rv_card_list_margin" />
-
             <androidx.cardview.widget.CardView
                 android:id="@+id/cvAddCard"
                 android:layout_width="match_parent"
@@ -215,6 +209,12 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/item_member_divider_height"
+                android:layout_marginTop="@dimen/item_member_divider_marginTop"
+                android:background="@color/divider_color" />
+
             <TextView
                 android:id="@+id/tvAddCard"
                 android:layout_width="match_parent"
@@ -228,6 +228,14 @@
                 android:textColor="@color/colorAccent"
                 android:textSize="@dimen/task_item_add_item_text_size"
                 tools:visibility="visible" />
+
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvCardList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/task_item_rv_card_list_margin" />
+
         </LinearLayout>
     </LinearLayout>
 </androidx.cardview.widget.CardView>

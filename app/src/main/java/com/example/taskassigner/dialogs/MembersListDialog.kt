@@ -49,5 +49,5 @@ abstract class MembersListDialog(context: Context,
             })
         }
     }
-    protected abstract fun onItemSelected(user: User, acton: String)
+    protected abstract fun onItemSelected(user: User, action: String)
 }

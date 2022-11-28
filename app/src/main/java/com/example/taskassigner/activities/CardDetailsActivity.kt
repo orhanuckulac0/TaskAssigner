@@ -7,16 +7,16 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.Toast
+import androidx.recyclerview.widget.GridLayoutManager
 import com.example.taskassigner.R
+import com.example.taskassigner.adapters.CardMemberListItemsAdapter
 import com.example.taskassigner.databinding.ActivityCardDetailsBinding
 import com.example.taskassigner.dialogs.LabelColorListDialog
 import com.example.taskassigner.dialogs.MembersListDialog
 import com.example.taskassigner.firebase.FirestoreClass
-import com.example.taskassigner.models.Board
-import com.example.taskassigner.models.Card
-import com.example.taskassigner.models.Task
-import com.example.taskassigner.models.User
+import com.example.taskassigner.models.*
 import com.example.taskassigner.utils.Constants
 import java.io.IOException
 
@@ -71,12 +71,15 @@ class CardDetailsActivity : BaseActivity(),
         binding?.tvSelectMembers?.setOnClickListener{
             membersListDialog()
         }
+
+        // get the current card' selected members
+        setupSelectedMembersList()
     }
 
     // get members list and create custom dialog to show members
     private fun membersListDialog(){
         // get the string ID's of the assigned users
-        var cardAssignedMembersList = mBoardDetails.taskList[mTaskListPosition].cards[mCardPosition].assignedTo
+        val cardAssignedMembersList = mBoardDetails.taskList[mTaskListPosition].cards[mCardPosition].assignedTo
 
         // if there are any users in assignedTo
         if (cardAssignedMembersList.size > 0){
@@ -105,11 +108,71 @@ class CardDetailsActivity : BaseActivity(),
             mMembersDetailList,
             resources.getString(R.string.select_members)
         ){
-            override fun onItemSelected(user: User, acton: String) {
-            // TODO implement the selected members functionality
+            override fun onItemSelected(user: User, action: String) {
+                if (action == Constants.SELECT){
+                    // if the user not in current assignedTo list, add
+                    if (!mBoardDetails.taskList[mTaskListPosition].cards[mCardPosition].assignedTo.contains(user.id)){
+                        mBoardDetails.taskList[mTaskListPosition].cards[mCardPosition].assignedTo.add(user.id)
+                    }
+                }else{
+                    // remove user from current selected users and set its selected value to false
+                    mBoardDetails.taskList[mTaskListPosition].cards[mCardPosition].assignedTo.remove(user.id)
+
+                    for (i in mMembersDetailList.indices){
+                        if (mMembersDetailList[i].id == user.id){
+                            mMembersDetailList[i].selected = false
+                        }
+                    }
+                }
+                // refresh
+                setupSelectedMembersList()
             }
         }
         memberListDialog.show()
+    }
+
+    private fun setupSelectedMembersList(){
+        val cardAssignedMembersList = mBoardDetails.taskList[mTaskListPosition].cards[mCardPosition].assignedTo
+
+        val selectedMembersList: ArrayList<SelectedMembers> = ArrayList()
+
+        for (i in mMembersDetailList.indices) {
+            for (j in cardAssignedMembersList) {
+                if (mMembersDetailList[i].id == j) {
+                    // create a new model for SelectedMembers model
+                    // add it to the selectedMembersList
+                    val selectedMember = SelectedMembers(
+                        mMembersDetailList[i].id,
+                        mMembersDetailList[i].image
+                    )
+
+                    selectedMembersList.add(selectedMember)
+                }
+            }
+        }
+
+        if (selectedMembersList.size > 0){
+            // this below makes adding member image visible to the UI
+            selectedMembersList.add(SelectedMembers(""," "))
+
+            binding?.tvSelectMembers?.visibility = View.GONE
+            binding?.rvSelectedMembersList?.visibility = View.VISIBLE
+            binding?.rvSelectedMembersList?.layoutManager = GridLayoutManager(this, 6)
+
+            val adapter = CardMemberListItemsAdapter(this, selectedMembersList)
+            binding?.rvSelectedMembersList?.adapter = adapter
+
+            adapter.setOnClickListener(
+                object: CardMemberListItemsAdapter.OnCLickListener{
+                    override fun onClick() {
+                        membersListDialog()
+                    }
+                }
+            )
+        }else{
+            binding?.tvSelectMembers?.visibility = View.VISIBLE
+            binding?.rvSelectedMembersList?.visibility = View.GONE
+        }
     }
 
     private fun updateCardDetails(){

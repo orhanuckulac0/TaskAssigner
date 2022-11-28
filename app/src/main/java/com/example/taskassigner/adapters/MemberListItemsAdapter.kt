@@ -21,7 +21,7 @@ data class MemberListItemsAdapter(val context: Context,
         val ivMemberImage = binding.ivMemberImage
         val tvMemberName = binding.tvMemberName
         val tvMemberEmail = binding.tvMemberEmail
-        val ivSelectedMember = binding.ivSelectedMember
+        val ivSelectedMemberTick = binding.ivSelectedMemberTick
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -42,15 +42,16 @@ data class MemberListItemsAdapter(val context: Context,
         holder.tvMemberEmail.text = model.email
 
         if (model.selected){
-            holder.ivSelectedMember.visibility = View.VISIBLE
+            holder.ivSelectedMemberTick.visibility = View.VISIBLE
         }else{
-            holder.ivSelectedMember.visibility = View.GONE
+            holder.ivSelectedMemberTick.visibility = View.GONE
         }
 
         // set each holder item a setOnClickListener
         holder.itemView.setOnClickListener {
             if (onItemClickListener != null){
                 if (model.selected) {
+                    // if model's selected value is selected, then allow user to unselect
                     onItemClickListener!!.onClick(position, model, Constants.UN_SELECT)
                 }else{
                     onItemClickListener!!.onClick(position, model, Constants.SELECT)
