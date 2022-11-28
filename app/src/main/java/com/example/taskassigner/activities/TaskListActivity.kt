@@ -25,7 +25,7 @@ class TaskListActivity : BaseActivity(),
     private var binding: ActivityTaskListBinding? = null
     private lateinit var boardDocumentId: String
     private lateinit var mBoardDetails: Board
-    private lateinit var mAssignedMemberDetailList: ArrayList<User>
+    lateinit var mAssignedMemberDetailList: ArrayList<User>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -162,16 +162,6 @@ class TaskListActivity : BaseActivity(),
 
         setupActionBar()
 
-//        dummy element
-        val addTaskList = Task(resources.getString(R.string.add_list))
-        board.taskList.add(addTaskList)
-
-        binding?.rvTaskList?.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-        binding?.rvTaskList?.setHasFixedSize(true)
-
-        val adapter = TaskListItemsAdapter(this, board.taskList)
-        binding?.rvTaskList?.adapter = adapter
-
         // make callback for members list for this specific document because
         // mBoardDetails is initialized in this function above
         FirestoreClass().getAssignedMembersList(this, mBoardDetails.assignedTo)
@@ -186,6 +176,17 @@ class TaskListActivity : BaseActivity(),
         mAssignedMemberDetailList = usersList
         Log.i("members", "$mAssignedMemberDetailList")
         cancelProgressDialog()
+
+        //        dummy element
+        val addTaskList = Task(resources.getString(R.string.add_list))
+        mBoardDetails.taskList.add(addTaskList)
+
+        binding?.rvTaskList?.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        binding?.rvTaskList?.setHasFixedSize(true)
+
+        val adapter = TaskListItemsAdapter(this, mBoardDetails.taskList)
+        binding?.rvTaskList?.adapter = adapter
+
     }
 
     override fun getAssignedMembersListFailed(error: String?) {

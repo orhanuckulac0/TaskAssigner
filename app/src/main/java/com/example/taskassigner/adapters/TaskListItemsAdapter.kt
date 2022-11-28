@@ -172,6 +172,7 @@ open class TaskListItemsAdapter(private val context: Context,
         adapter.setOnClickListener(object: CardListItemsAdapter.OnClickListener{
             override fun onClick(cardPosition: Int) {
                 if (context is TaskListActivity){
+                    // call the cardDetails fun on TaskListActivity which will start intent for CardDetailsActivity
                     context.cardDetails(holder.adapterPosition, cardPosition)
                 }
             }
