@@ -1,6 +1,7 @@
 package com.example.taskassigner.activities
 
 import android.app.AlertDialog
+import android.app.DatePickerDialog
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
@@ -19,17 +20,26 @@ import com.example.taskassigner.firebase.FirestoreClass
 import com.example.taskassigner.models.*
 import com.example.taskassigner.utils.Constants
 import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.collections.ArrayList
 
 class CardDetailsActivity : BaseActivity(),
     FirestoreClass.AddUpdateTaskListCallback {
 
     private var binding: ActivityCardDetailsBinding? = null
+
     private lateinit var mBoardDetails: Board
     private lateinit var mCurrentCard: Card
     private lateinit var mMembersDetailList: ArrayList<User>
+
     private var mTaskListPosition = -1
     private var mCardPosition = -1
     private var mSelectedColor = ""
+
+    private var mSelectedDueDate = ""
+    private var cal = Calendar.getInstance()
+    private lateinit var dateSetListener: DatePickerDialog.OnDateSetListener
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,8 +82,34 @@ class CardDetailsActivity : BaseActivity(),
             membersListDialog()
         }
 
+        binding?.tvSelectDueDate?.setOnClickListener {
+            createDatePicker()
+        }
+
         // get the current card' selected members
         setupSelectedMembersList()
+    }
+
+    private fun createDatePicker(){
+        dateSetListener = DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
+            cal.set(Calendar.YEAR, year)
+            cal.set(Calendar.MONTH, month)
+            cal.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+        }
+
+        DatePickerDialog(this,
+            dateSetListener,
+            cal.get(Calendar.YEAR),
+            cal.get(Calendar.MONTH),
+            cal.get(Calendar.DAY_OF_MONTH)
+        ).show()
+
+        val myFormat = "dd.MM.yyyy"
+        val sdf = SimpleDateFormat(myFormat, Locale.getDefault())
+
+        binding?.tvSelectDueDate?.text = sdf.format(cal.time).toString()
+
+        mSelectedDueDate = binding?.tvSelectDueDate?.text.toString()
     }
 
     // get members list and create custom dialog to show members
@@ -180,7 +216,8 @@ class CardDetailsActivity : BaseActivity(),
             binding?.etCardNameDetails?.text.toString(),
             mBoardDetails.taskList[mTaskListPosition].cards[mCardPosition].createdBy,
             mBoardDetails.taskList[mTaskListPosition].cards[mCardPosition].assignedTo,
-            mSelectedColor
+            mSelectedColor,
+            mSelectedDueDate
             )
 
         mBoardDetails.taskList[mTaskListPosition].cards[mCardPosition] = updatedCard
@@ -236,6 +273,12 @@ class CardDetailsActivity : BaseActivity(),
 
         try {
             mCurrentCard = mBoardDetails.taskList[mTaskListPosition].cards[mCardPosition]
+            mSelectedDueDate = mCurrentCard.dueDate
+
+            if (mSelectedDueDate != ""){
+                binding?.tvSelectDueDate?.text = mSelectedDueDate
+            }
+
         }catch (e: IOException){
             e.printStackTrace()
             Log.e("Error occurred", e.toString())

@@ -15,7 +15,7 @@ import com.example.taskassigner.models.Card
 import com.example.taskassigner.models.Task
 import com.example.taskassigner.models.User
 import com.example.taskassigner.utils.Constants
-import com.google.firebase.firestore.ktx.firestoreSettings
+import kotlin.collections.ArrayList
 
 class TaskListActivity : BaseActivity(),
     FirestoreClass.GetBoardDetailsCallback,
