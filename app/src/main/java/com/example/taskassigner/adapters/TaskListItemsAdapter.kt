@@ -1,5 +1,6 @@
 package com.example.taskassigner.adapters
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
 import android.content.res.Resources
@@ -8,16 +9,23 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.LayoutManager
 import com.example.taskassigner.activities.TaskListActivity
 import com.example.taskassigner.databinding.ItemTaskBinding
 import com.example.taskassigner.models.Task
+import java.util.*
+import kotlin.collections.ArrayList
 
 open class TaskListItemsAdapter(private val context: Context,
                                 private val list: ArrayList<Task>):
     RecyclerView.Adapter<TaskListItemsAdapter.ViewHolder>() {
+
+    private var mPositionDraggedFrom = -1
+    private var mPositionDraggedTo = -1
 
     class ViewHolder(binding: ItemTaskBinding) : RecyclerView.ViewHolder(binding.root){
         val tvAddTaskList = binding.tvAddTaskList
@@ -62,7 +70,7 @@ open class TaskListItemsAdapter(private val context: Context,
         return ViewHolder(view)
     }
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: ViewHolder, @SuppressLint("RecyclerView") position: Int) {
         val model = list[position]
 
         // if there's no entries in the list, tv should be visible
@@ -178,12 +186,42 @@ open class TaskListItemsAdapter(private val context: Context,
             }
         })
 
+        val helper = ItemTouchHelper(
+            object: ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP or ItemTouchHelper.DOWN, 0
+            ){
+                override fun onMove(
+                    recyclerView: RecyclerView,
+                    viewHolder: RecyclerView.ViewHolder,
+                    target: RecyclerView.ViewHolder,
+                ): Boolean {
+                    val fromPos = viewHolder.adapterPosition
+                    val toPos = target.adapterPosition
+                    Collections.swap(list[position].cards, fromPos, toPos)
+                    adapter.notifyItemMoved(fromPos, toPos)
+                    return false
+                }
 
+                override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                }
+
+                override fun clearView(
+                    recyclerView: RecyclerView,
+                    viewHolder: RecyclerView.ViewHolder
+                ) {
+                    super.clearView(recyclerView, viewHolder)
+                    // when drag and drop stops, call for updating the DB and UI
+                    (context as TaskListActivity)
+                        .updateCardsInTaskList(position, list[position].cards)
+                }
+
+            }
+        )
+        helper.attachToRecyclerView(holder.rvCardList)
     }
 
     override fun getItemCount(): Int {
-        return list.size
-    }
+            return list.size
+        }
 
     private fun alertDialogForDeleteList(position: Int, title: String){
         val builder = AlertDialog.Builder(context)
