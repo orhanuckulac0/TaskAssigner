@@ -5,12 +5,16 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.media.RingtoneManager
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.taskassigner.R
 import com.example.taskassigner.activities.MainActivity
+import com.example.taskassigner.activities.SignInActivity
+import com.example.taskassigner.firebase.FirestoreClass
+import com.example.taskassigner.utils.Constants
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 
@@ -19,16 +23,20 @@ class MyFirebaseMessagingService: FirebaseMessagingService() {
     // 2 types of messages, data messages and notification messages
     // data messages are handled here, onMessageReceived
     // traditionally used with GCM, Google Cloud Messaging
-    override fun onMessageReceived(message: RemoteMessage) {
-        super.onMessageReceived(message)
+    override fun onMessageReceived(remoteMessage: RemoteMessage) {
+        super.onMessageReceived(remoteMessage)
 
-        Log.d(TAG,"FROM ${message.from}")
+        Log.d(TAG,"FROM ${remoteMessage.from}")
 
-        message.data.isNotEmpty().let {
-            Log.d(TAG,"Message Data Payload: ${message.data}")
+        remoteMessage.data.isNotEmpty().let {
+            Log.d(TAG,"Message Data Payload: ${remoteMessage.data}")
+            val title = remoteMessage.data[Constants.FCM_KEY_TITLE].toString()
+            val message = remoteMessage.data[Constants.FCM_KEY_MESSAGE].toString()
+
+            displayNotificationOnPhone(title, message)
         }
 
-        message.notification.let {
+        remoteMessage.notification.let {
             Log.d(TAG,"Message Notification Body: ${it?.body}")
         }
     }
@@ -50,17 +58,30 @@ class MyFirebaseMessagingService: FirebaseMessagingService() {
     }
 
     private fun sendRegistrationToServer(token: String?){
-
+        // Here we have saved the token in the Shared Preferences
+        val sharedPreferences =
+            this.getSharedPreferences(Constants.TASKASSIGNER_PREFERENCES, Context.MODE_PRIVATE)
+        val editor: SharedPreferences.Editor = sharedPreferences.edit()
+        editor.putString(Constants.FCM_TOKEN, token)
+        editor.apply()
     }
 
-    private fun sendNotification() {
-        val intent = Intent(this, MainActivity::class.java)
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP) // put this activity on top of the activity stacks
+    private fun displayNotificationOnPhone(title: String, message: String) {
+        val intent = if (FirestoreClass().getCurrentUserId().isNotEmpty()){
+            Intent(this, MainActivity::class.java)
+        } else {
+            Intent(this, SignInActivity::class.java)
+        }
+        intent.addFlags(
+            Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                 Intent.FLAG_ACTIVITY_NEW_TASK or
+                 Intent.FLAG_ACTIVITY_CLEAR_TASK
+        )
 
         val pendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE)
+            PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
         } else {
-            PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT)
+            PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE)
         }
 
         val channelId = this.resources.getString(R.string.default_notification_channel_id)
@@ -68,8 +89,8 @@ class MyFirebaseMessagingService: FirebaseMessagingService() {
 
         val notificationBuilder = NotificationCompat.Builder(this, channelId)
             .setSmallIcon(R.drawable.ic_stat_ic_notification)
-            .setContentTitle("Title")
-            .setContentText("Message")
+            .setContentTitle(title)
+            .setContentText(message)
             .setAutoCancel(true)
             .setSound(defaultSoundURI)
             .setContentIntent(pendingIntent)
