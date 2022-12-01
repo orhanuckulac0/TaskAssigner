@@ -4,12 +4,14 @@ import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.os.Build
 import android.os.Bundle
+import android.util.JsonReader
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.EditText
 import android.widget.Toast
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.taskassigner.R
 import com.example.taskassigner.adapters.MemberListItemsAdapter
@@ -18,6 +20,17 @@ import com.example.taskassigner.firebase.FirestoreClass
 import com.example.taskassigner.models.Board
 import com.example.taskassigner.models.User
 import com.example.taskassigner.utils.Constants
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import org.json.JSONObject
+import java.io.BufferedReader
+import java.io.DataOutputStream
+import java.io.IOException
+import java.io.InputStreamReader
+import java.lang.StringBuilder
+import java.net.HttpURLConnection
+import java.net.SocketTimeoutException
+import java.net.URL
 
 
 class MembersActivity : BaseActivity(),
@@ -45,6 +58,78 @@ class MembersActivity : BaseActivity(),
 
         showProgressDialog(resources.getString(R.string.please_wait))
         FirestoreClass().getAssignedMembersList(this, mBoardDetails.assignedTo)
+    }
+
+    private fun sendNotificationToUser(createdBy: String, boardName: String, token: String): String{
+        var result = ""
+        lifecycleScope.launch(Dispatchers.IO) {
+            var connection: HttpURLConnection? = null
+            try {
+                val url = URL(Constants.FCM_BASE_URL)
+                connection = url.openConnection() as HttpURLConnection
+                connection.doOutput = true
+                connection.doInput = true
+                connection.instanceFollowRedirects = false
+                connection.requestMethod = "POST"
+
+                connection.setRequestProperty("Content-Type", "application/json")
+                connection.setRequestProperty("charset", "utf-8")
+                connection.setRequestProperty("Accept", "application/json")
+
+                connection.setRequestProperty(
+                    Constants.FCM_AUTHORIZATION, "${Constants.FCM_KEY}=${Constants.FCM_SERVER_KEY}"
+                )
+                connection.useCaches = false
+
+                val writer = DataOutputStream(connection.outputStream)
+                val jsonRequest = JSONObject()
+                val dataObject = JSONObject()
+
+                dataObject.put(Constants.FCM_KEY_TITLE, "Assigned to the board $boardName")
+                dataObject.put(Constants.FCM_KEY_MESSAGE, "You have been assigned to a new board by $createdBy")
+
+                jsonRequest.put(Constants.FCM_KEY_DATA, dataObject)
+                jsonRequest.put(Constants.FCM_KEY_TO, token)
+
+                writer.writeBytes(jsonRequest.toString())
+                writer.flush()
+                writer.close()
+
+                val httpResult: Int = connection.responseCode
+                if (httpResult == HttpURLConnection.HTTP_OK){
+                    val inputStream = connection.inputStream
+                    val reader = BufferedReader(InputStreamReader(inputStream))
+
+                    val stringBuilder = StringBuilder()
+                    var line: String?
+                    try {
+                        while (reader.readLine().also { line=it } != null){
+                            stringBuilder.append(line+"\n")
+                        }
+                    }catch (e: IOException){
+                        e.printStackTrace()
+                    }finally {
+                        try {
+                            inputStream.close()
+                        }catch (e: IOException){
+                            e.printStackTrace()
+                        }
+                    }
+                    result = stringBuilder.toString()
+                }else{
+                    result = connection.responseMessage
+                }
+            }catch (e: IOException){
+                e.printStackTrace()
+            }catch (e: SocketTimeoutException){
+                result = "Connection Time out"
+            }catch (e: java.lang.Exception){
+                result = "Error: ${e.message}"
+            }finally {
+                connection?.disconnect()
+            }
+        }
+        return result
     }
 
     private fun setupActionBar(){
@@ -143,6 +228,8 @@ class MembersActivity : BaseActivity(),
 
     // TO ADD MEMBER TO DB CALLBACK RESPONSE
     override fun assignMemberToBoardCallbackSuccess(user: User) {
+        sendNotificationToUser(mBoardDetails.createdBy, mBoardDetails.name, user.fcmToken)
+
         Toast.makeText(this, "New Member Added!", Toast.LENGTH_LONG).show()
     }
 
