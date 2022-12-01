@@ -1,7 +1,9 @@
 package com.example.taskassigner.activities
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
@@ -26,17 +28,21 @@ import com.google.android.material.imageview.ShapeableImageView
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.messaging.FirebaseMessaging
 
 class MainActivity :
     BaseActivity(),
     NavigationView.OnNavigationItemSelectedListener,
     FirestoreClass.UserDataLoadCallback,
-        FirestoreClass.GetBoardsListCallback
+    FirestoreClass.GetBoardsListCallback,
+        FirestoreClass.UserDataUpdateCallback
 {
 
     private var binding: ActivityMainBinding? = null
     private lateinit var mUserName: String
     private var dividerCreated: Boolean = false
+
+    private lateinit var mSharedPreferences: SharedPreferences
 
     private var resultLauncherForProfileUpdate = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             result ->
@@ -69,6 +75,15 @@ class MainActivity :
 
         setupActionBar()
         binding?.navView?.setNavigationItemSelectedListener(this)
+
+        mSharedPreferences = this.getSharedPreferences(Constants.TASKASSIGNER_PREFERENCES, Context.MODE_PRIVATE)
+        val tokenUpdated = mSharedPreferences.getBoolean(Constants.FCM_TOKEN_UPDATED, false)
+
+        if (!tokenUpdated){
+            FirebaseMessaging.getInstance().token.addOnSuccessListener(this@MainActivity){
+                updateFCMToken(it)
+            }
+        }
 
         // get user data and board data onResume
         // so that if new data or board is created user will see the updated UI
@@ -147,6 +162,13 @@ class MainActivity :
         }
     }
 
+    private fun updateFCMToken(token: String){
+        val userHashMap = HashMap<String, Any>()
+        userHashMap[Constants.FCM_TOKEN] = token
+
+        FirestoreClass().updateUserProfileData(this, userHashMap)
+    }
+
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         if (binding?.drawerLayout!!.isDrawerOpen(GravityCompat.START)){
@@ -165,6 +187,10 @@ class MainActivity :
             }
             R.id.navSignOut -> {
                 Firebase.auth.signOut()
+
+                // reset the shared preferences to empty
+                mSharedPreferences.edit().clear().apply()
+
                 val intent = Intent(this, IntroActivity::class.java)
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
                 startActivity(intent)
@@ -187,6 +213,12 @@ class MainActivity :
             .into(findViewById<ShapeableImageView>(R.id.profileImage))
 
         findViewById<TextView>(R.id.tvUsername).text = user.name
+
+        val editor: SharedPreferences.Editor = mSharedPreferences.edit()
+        editor.putBoolean(Constants.FCM_TOKEN_UPDATED, true)
+        editor.apply()
+
+        cancelProgressDialog()
     }
 
     override fun userDataLoadFailed(error: String?) {
@@ -196,19 +228,28 @@ class MainActivity :
 
     // get boards from Firestore callback
     override fun getBoardsSuccess(boardsList: ArrayList<Board>) {
+        cancelProgressDialog()
         populateBoardsListToUI(boardsList)
     }
 
     override fun getBoardsFailed(error: String?) {
+        cancelProgressDialog()
         Log.i("Fetch BoardsList Error", "$error")
+    }
+
+    override fun updateDataLoadSuccess() {
+        Log.i("Token Added:", "SUCCESSFUL")
+    }
+
+    override fun updateDataLoadFailed(error: String?) {
+        Log.i("update data failed", "$error")
     }
 
     override fun onResume() {
         super.onResume()
+        showProgressDialog(resources.getString(R.string.please_wait))
         FirestoreClass().loadUserData(this)
         FirestoreClass().getBoardsList(this)
-        showProgressDialog(resources.getString(R.string.please_wait))
-
     }
 
     override fun onDestroy() {
