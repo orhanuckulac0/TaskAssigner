@@ -30,7 +30,6 @@ class TaskListActivity : BaseActivity(),
     private lateinit var boardDocumentId: String
     private lateinit var mBoardDetails: Board
     private lateinit var mMenuItemDeleteBoard: MenuItem
-    private lateinit var mMenuItemBoardDetails: MenuItem
     lateinit var mAssignedMemberDetailList: ArrayList<User>
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,17 +61,14 @@ class TaskListActivity : BaseActivity(),
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.menu_items, menu)
+        menuInflater.inflate(R.menu.menu_members, menu)
         mMenuItemDeleteBoard = menu?.findItem(R.id.actionDeleteBoard)!!
-        mMenuItemBoardDetails= menu.findItem(R.id.actionBoardDetails)!!
-
 
         val mCurrentUserID = FirestoreClass().getCurrentUserId()
         // check if current user is the one who created the board
         // if so, make menu item visible
         if (mCurrentUserID == mBoardDetails.createdByID){
             mMenuItemDeleteBoard.isVisible = true
-            mMenuItemBoardDetails.isVisible = true
         }
         return super.onCreateOptionsMenu(menu)
     }
@@ -89,13 +85,6 @@ class TaskListActivity : BaseActivity(),
             R.id.actionDeleteBoard -> {
                 alertDialogForDeleteBoard()
             }
-            R.id.actionBoardDetails -> {
-                val intent = Intent(this@TaskListActivity, BoardDetailsActivity::class.java)
-                intent.putExtra(Constants.BOARD_DETAIL, mBoardDetails)
-                startActivity(intent)
-                return true
-            }
-
         }
         return super.onOptionsItemSelected(item)
     }

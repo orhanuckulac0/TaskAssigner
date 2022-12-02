@@ -9,10 +9,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.taskassigner.R
+import androidx.recyclerview.widget.RecyclerView.LayoutManager
 import com.example.taskassigner.activities.TaskListActivity
 import com.example.taskassigner.databinding.ItemTaskBinding
 import com.example.taskassigner.models.Task
@@ -22,6 +23,9 @@ import kotlin.collections.ArrayList
 open class TaskListItemsAdapter(private val context: Context,
                                 private val list: ArrayList<Task>):
     RecyclerView.Adapter<TaskListItemsAdapter.ViewHolder>() {
+
+    private var mPositionDraggedFrom = -1
+    private var mPositionDraggedTo = -1
 
     class ViewHolder(binding: ItemTaskBinding) : RecyclerView.ViewHolder(binding.root){
         val tvAddTaskList = binding.tvAddTaskList
@@ -223,7 +227,7 @@ open class TaskListItemsAdapter(private val context: Context,
         val builder = AlertDialog.Builder(context)
         builder.setTitle("Alert")
         builder.setMessage("Are you sure you want to delete $title?")
-        builder.setIcon(R.drawable.ic_baseline_warning_24)
+        builder.setIcon(android.R.drawable.ic_dialog_alert)
 
         builder.setPositiveButton("Yes") { dialogInterface, which ->
             dialogInterface.dismiss()
