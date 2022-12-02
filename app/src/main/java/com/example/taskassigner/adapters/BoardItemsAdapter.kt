@@ -1,8 +1,11 @@
 package com.example.taskassigner.adapters
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.taskassigner.R
@@ -27,6 +30,7 @@ open class BoardItemsAdapter(private val context: Context,
         return ViewHolder(ItemBoardBinding.inflate(LayoutInflater.from(parent.context), parent, false))
     }
 
+    @SuppressLint("Range")
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val model = list[position]
         Glide
@@ -36,7 +40,9 @@ open class BoardItemsAdapter(private val context: Context,
             .placeholder(R.drawable.ic_board_place_holder)
             .into(holder.ivBoardItemImage)
 
-//        holder.boardLabelColor.setBackgroundColor(ContextCompat.getColor(context, R.color.black))
+        if (model.labelColor != ""){
+            holder.boardLabelColor.setBackgroundColor(Color.parseColor(model.labelColor))
+        }
         holder.tvBoardName.text = model.name
         holder.tvCreatedBy.text = "Created by: ${model.createdBy}" // for now
 

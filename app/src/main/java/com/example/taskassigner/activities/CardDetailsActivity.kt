@@ -82,6 +82,13 @@ class CardDetailsActivity : BaseActivity(),
             membersListDialog()
         }
 
+        dateSetListener = DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
+            cal.set(Calendar.YEAR, year)
+            cal.set(Calendar.MONTH, month)
+            cal.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+            updateDateInView()
+        }
+
         binding?.tvSelectDueDate?.setOnClickListener {
             createDatePicker()
         }
@@ -91,19 +98,15 @@ class CardDetailsActivity : BaseActivity(),
     }
 
     private fun createDatePicker(){
-        dateSetListener = DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
-            cal.set(Calendar.YEAR, year)
-            cal.set(Calendar.MONTH, month)
-            cal.set(Calendar.DAY_OF_MONTH, dayOfMonth)
-        }
-
         DatePickerDialog(this,
             dateSetListener,
             cal.get(Calendar.YEAR),
             cal.get(Calendar.MONTH),
             cal.get(Calendar.DAY_OF_MONTH)
         ).show()
+    }
 
+    private fun updateDateInView(){
         val myFormat = "dd.MM.yyyy"
         val sdf = SimpleDateFormat(myFormat, Locale.getDefault())
 
