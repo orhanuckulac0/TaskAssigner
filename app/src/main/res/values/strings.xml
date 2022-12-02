@@ -49,7 +49,10 @@
 
     <string name="str_select_label_color">Select Label Color</string>
     <string name="str_select_member">Select Member</string>
-    
+
     <string name="default_notification_channel_id">taskassigner_notification_channel</string>
     <string name="delete_board">Delete Board</string>
+    <string name="update_board">Update Board</string>
+    <string name="hint_board_name">Board Name</string>
+    <string name="board_details">Board Details</string>
 </resources>

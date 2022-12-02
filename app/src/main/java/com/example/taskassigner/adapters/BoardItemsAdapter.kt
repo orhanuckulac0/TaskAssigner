@@ -20,6 +20,7 @@ open class BoardItemsAdapter(private val context: Context,
         val tvBoardName = binding.tvBoardName
         val tvCreatedBy = binding.tvCreatedBy
         val ivBoardItemImage = binding.ivBoardItemImage
+        val boardLabelColor = binding.boardLabelColor
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -35,6 +36,7 @@ open class BoardItemsAdapter(private val context: Context,
             .placeholder(R.drawable.ic_board_place_holder)
             .into(holder.ivBoardItemImage)
 
+//        holder.boardLabelColor.setBackgroundColor(ContextCompat.getColor(context, R.color.black))
         holder.tvBoardName.text = model.name
         holder.tvCreatedBy.text = "Created by: ${model.createdBy}" // for now
 
