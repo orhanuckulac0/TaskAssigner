@@ -5,4 +5,9 @@
         android:orderInCategory="100"
         android:title="@string/members"
         app:showAsAction="never"/>
+    <item android:id="@+id/actionDeleteBoard"
+        android:orderInCategory="100"
+        android:title="@string/delete_board"
+        android:visible="false"
+        app:showAsAction="never"/>
 </menu>

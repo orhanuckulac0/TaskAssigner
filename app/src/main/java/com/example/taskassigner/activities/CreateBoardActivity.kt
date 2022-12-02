@@ -175,7 +175,8 @@ class CreateBoardActivity : BaseActivity(), FirestoreClass.CreateBoardCallback {
                 name = binding?.etBoardName?.text.toString(),
                 image = mBoardImageURL,
                 createdBy = mUserName,
-                assignedTo = assignedUsersArrayList
+                createdByID = FirestoreClass().getCurrentUserId(),
+                assignedTo = assignedUsersArrayList,
             )
 
             FirestoreClass().createBoard(this, board)

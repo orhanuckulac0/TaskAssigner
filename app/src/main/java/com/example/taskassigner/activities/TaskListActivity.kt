@@ -1,10 +1,12 @@
 package com.example.taskassigner.activities
 
+import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.taskassigner.R
 import com.example.taskassigner.adapters.TaskListItemsAdapter
@@ -20,11 +22,14 @@ import kotlin.collections.ArrayList
 class TaskListActivity : BaseActivity(),
     FirestoreClass.GetBoardDetailsCallback,
     FirestoreClass.AddUpdateTaskListCallback,
-    FirestoreClass.GetAssignedMembersList {
+    FirestoreClass.GetAssignedMembersList,
+    FirestoreClass.DeleteBoardCallback
+    {
 
     private var binding: ActivityTaskListBinding? = null
     private lateinit var boardDocumentId: String
     private lateinit var mBoardDetails: Board
+    private lateinit var mMenuItemDeleteBoard: MenuItem
     lateinit var mAssignedMemberDetailList: ArrayList<User>
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,6 +62,14 @@ class TaskListActivity : BaseActivity(),
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_members, menu)
+        mMenuItemDeleteBoard = menu?.findItem(R.id.actionDeleteBoard)!!
+
+        val mCurrentUserID = FirestoreClass().getCurrentUserId()
+        // check if current user is the one who created the board
+        // if so, make menu item visible
+        if (mCurrentUserID == mBoardDetails.createdByID){
+            mMenuItemDeleteBoard.isVisible = true
+        }
         return super.onCreateOptionsMenu(menu)
     }
 
@@ -69,8 +82,35 @@ class TaskListActivity : BaseActivity(),
                 startActivity(intent)
                 return true
             }
+            R.id.actionDeleteBoard -> {
+                alertDialogForDeleteBoard()
+            }
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun alertDialogForDeleteBoard() {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Alert")
+        builder.setMessage("Are you sure you want to delete this board?")
+        builder.setIcon(R.drawable.ic_baseline_warning_24)
+        builder.setCancelable(false)
+
+        builder.setPositiveButton("Yes") { dialogInterface, _ ->
+            showProgressDialog(resources.getString(R.string.please_wait))
+
+            FirestoreClass().deleteBoard(this, boardDocumentId)
+            dialogInterface.dismiss()
+
+            startActivity(Intent(this@TaskListActivity, MainActivity::class.java))
+            finish()
+        }
+
+        builder.setNegativeButton("No") { dialogInterface, _ ->
+            dialogInterface.dismiss()
+        }
+            .create()
+            .show()
     }
 
     fun createTaskList(taskListName: String){
@@ -176,6 +216,15 @@ class TaskListActivity : BaseActivity(),
     override fun getBoardDetailsFailed(error: String?) {
         cancelProgressDialog()
         Log.i("Error occurred", error.toString())
+    }
+
+    override fun deleteBoardCallbackSuccess() {
+        Toast.makeText(this, "Board Deleted Successfully. ", Toast.LENGTH_LONG).show()
+    }
+
+    override fun deleteBoardCallbackFailed(error: String?) {
+        Toast.makeText(this, "Something went wrong, please try again. ", Toast.LENGTH_LONG).show()
+        Log.e("Error", error.toString())
     }
 
     override fun getAssignedMembersListSuccess(usersList: ArrayList<User>) {

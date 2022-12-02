@@ -7,12 +7,14 @@ data class Board(
     var name: String = "",
     var image: String = "",
     var createdBy: String = "",
+    var createdByID: String = "",
     var assignedTo: ArrayList<String> = ArrayList(),
     var documentId: String = "",
     var taskList: ArrayList<Task> = ArrayList()
 
 ): Parcelable {
     constructor(parcel: Parcel) : this(
+        parcel.readString()!!,
         parcel.readString()!!,
         parcel.readString()!!,
         parcel.readString()!!,
@@ -26,6 +28,7 @@ data class Board(
         parcel.writeString(name)
         parcel.writeString(image)
         parcel.writeString(createdBy)
+        parcel.writeString(createdByID)
         parcel.writeStringList(assignedTo)
         parcel.writeString(documentId)
         parcel.writeTypedList(taskList)

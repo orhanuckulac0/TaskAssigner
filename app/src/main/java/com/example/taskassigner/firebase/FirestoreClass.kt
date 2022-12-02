@@ -81,6 +81,21 @@ class FirestoreClass: BaseActivity() {
             }
     }
 
+    fun deleteBoard(callback: DeleteBoardCallback, boardID: String){
+        mFireStore.collection(Constants.BOARDS)
+            .document(boardID)
+            .delete()
+            .addOnSuccessListener {
+                Log.e(callback.javaClass.simpleName, "Board Deleted Successfully")
+
+                callback.deleteBoardCallbackSuccess()
+            }.addOnFailureListener {
+                    e->
+                callback.deleteBoardCallbackFailed(e.toString())
+                Log.e(callback.javaClass.simpleName, "Error", e)
+            }
+    }
+
     fun getBoardsList(callback: GetBoardsListCallback){
 
         // get the board assigned to the current user id
@@ -224,6 +239,11 @@ class FirestoreClass: BaseActivity() {
     interface CreateBoardCallback {
         fun createBoardSuccess()
         fun createBoardFailed(error: String?)
+    }
+
+    interface DeleteBoardCallback {
+        fun deleteBoardCallbackSuccess()
+        fun deleteBoardCallbackFailed(error: String?)
     }
 
     interface GetBoardsListCallback {
