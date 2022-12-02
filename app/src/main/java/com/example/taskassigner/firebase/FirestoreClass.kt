@@ -47,6 +47,20 @@ class FirestoreClass: BaseActivity() {
             }
     }
 
+    fun getSingleUserData(callback: GetSingleUserDataCallback, userID: String) {
+        mFireStore.collection(Constants.USERS)
+            .document(userID)
+            .get()
+            .addOnSuccessListener { document ->
+                val currentUser = document.toObject(User::class.java)
+                if (currentUser != null){
+                    callback.getUserDataSuccess(currentUser)
+                }
+            }.addOnSuccessListener { e->
+                callback.getUserDataFailed(e.toString())
+            }
+    }
+
     fun updateUserProfileData(callback: UserDataUpdateCallback, userHashMap: HashMap<String, Any>){
         mFireStore.collection(Constants.USERS)
             .document(getCurrentUserId())
@@ -92,6 +106,21 @@ class FirestoreClass: BaseActivity() {
             }.addOnFailureListener {
                     e->
                 callback.deleteBoardCallbackFailed(e.toString())
+                Log.e(callback.javaClass.simpleName, "Error", e)
+            }
+    }
+
+    fun updateBoard(callback: UpdateBoardCallback, boardHashMap: HashMap<String,Any>, board: Board){
+
+        mFireStore.collection(Constants.BOARDS)
+            .document(board.documentId)
+            .update(boardHashMap)
+            .addOnSuccessListener {
+                callback.updateBoardSuccess()
+                Log.e(callback.javaClass.simpleName, "Board Updated Successfully")
+
+            }.addOnFailureListener { e ->
+                callback.updateBoardFailed(e.toString())
                 Log.e(callback.javaClass.simpleName, "Error", e)
             }
     }
@@ -231,6 +260,11 @@ class FirestoreClass: BaseActivity() {
         fun userDataLoadFailed(error: String?)
     }
 
+    interface GetSingleUserDataCallback {
+        fun getUserDataSuccess(user: User)
+        fun getUserDataFailed(error: String?)
+    }
+
     interface UserDataUpdateCallback {
         fun updateDataLoadSuccess()
         fun updateDataLoadFailed(error: String?)
@@ -254,6 +288,11 @@ class FirestoreClass: BaseActivity() {
     interface GetBoardDetailsCallback {
         fun getBoardDetailsSuccess(board: Board)
         fun getBoardDetailsFailed(error: String?)
+    }
+
+    interface UpdateBoardCallback {
+        fun updateBoardSuccess()
+        fun updateBoardFailed(error: String?)
     }
 
     interface AddUpdateTaskListCallback {

@@ -41,11 +41,19 @@
                 android:orientation="vertical"
                 android:padding="@dimen/card_details_cv_content_padding">
 
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/ivUpdateBoardImage"
+                    android:layout_width="@dimen/my_profile_user_image_size"
+                    android:layout_height="@dimen/my_profile_user_image_size"
+                    android:src="@drawable/ic_board_place_holder"
+                    android:layout_marginBottom="20dp"
+                    />
+
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
-                    <androidx.appcompat.widget.AppCompatEditText
+                    <EditText
                         android:id="@+id/etBoardNameDetails"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -121,13 +129,14 @@
                 android:orientation="horizontal"
                 android:padding="@dimen/item_member_content_padding">
 
-                <de.hdodenhof.circleimageview.CircleImageView
-                    android:id="@+id/ivMemberImage"
-                    android:layout_width="@dimen/item_member_member_image_size"
-                    android:layout_height="@dimen/item_member_member_image_size"
-                    android:src="@drawable/ic_user_place_holder"
-                    app:civ_border_color="@color/primary_text_color"
-                    app:civ_border_width="@dimen/item_member_image_circular_width_size" />
+                    <de.hdodenhof.circleimageview.CircleImageView
+                        android:id="@+id/ivCreatedByUserImage"
+                        android:layout_width="@dimen/item_selected_member_image_size"
+                        android:layout_height="@dimen/item_selected_member_image_size"
+                        android:src="@drawable/ic_user_place_holder"
+                        android:visibility="visible"
+                        app:civ_border_color="@color/primary_text_color"
+                        app:civ_border_width="@dimen/item_member_image_circular_width_size" />
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -156,7 +165,7 @@
             </LinearLayout>
 
             <Button
-                    android:id="@+id/btnUpdateCardDetails"
+                    android:id="@+id/btnUpdateBoardDetails"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"

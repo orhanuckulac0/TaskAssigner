@@ -11,7 +11,8 @@ data class Board(
     var assignedTo: ArrayList<String> = ArrayList(),
     var documentId: String = "",
     var taskList: ArrayList<Task> = ArrayList(),
-    var labelColor: String = ""
+    var labelColor: String = "",
+    var dueDate: String = "",
 
 ): Parcelable {
     constructor(parcel: Parcel) : this(
@@ -22,8 +23,9 @@ data class Board(
         parcel.createStringArrayList()!!,
         parcel.readString()!!,
         parcel.createTypedArrayList(Task.CREATOR)!!,
+        parcel.readString()!!,
         parcel.readString()!!
-        ) {
+    ) {
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -35,6 +37,7 @@ data class Board(
         parcel.writeString(documentId)
         parcel.writeTypedList(taskList)
         parcel.writeString(labelColor)
+        parcel.writeString(dueDate)
     }
 
     override fun describeContents(): Int {
