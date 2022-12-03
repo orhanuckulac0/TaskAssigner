@@ -4,14 +4,12 @@ import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.os.Build
 import android.os.Bundle
-import android.util.JsonReader
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.EditText
 import android.widget.Toast
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.taskassigner.R
 import com.example.taskassigner.adapters.MemberListItemsAdapter
@@ -20,8 +18,6 @@ import com.example.taskassigner.firebase.FirestoreClass
 import com.example.taskassigner.models.Board
 import com.example.taskassigner.models.User
 import com.example.taskassigner.utils.Constants
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.DataOutputStream
@@ -31,6 +27,7 @@ import java.lang.StringBuilder
 import java.net.HttpURLConnection
 import java.net.SocketTimeoutException
 import java.net.URL
+import kotlin.concurrent.thread
 
 
 class MembersActivity : BaseActivity(),
@@ -62,7 +59,7 @@ class MembersActivity : BaseActivity(),
 
     private fun sendNotificationToUser(createdBy: String, boardName: String, token: String): String{
         var result = ""
-        lifecycleScope.launch(Dispatchers.IO) {
+        thread {
             var connection: HttpURLConnection? = null
             try {
                 val url = URL(Constants.FCM_BASE_URL)
@@ -228,9 +225,10 @@ class MembersActivity : BaseActivity(),
 
     // TO ADD MEMBER TO DB CALLBACK RESPONSE
     override fun assignMemberToBoardCallbackSuccess(user: User) {
+        runOnUiThread {
+            Toast.makeText(this,"Member added successfully.", Toast.LENGTH_LONG).show()
+        }
         sendNotificationToUser(mBoardDetails.createdBy, mBoardDetails.name, user.fcmToken)
-
-        Toast.makeText(this, "New Member Added!", Toast.LENGTH_LONG).show()
     }
 
     override fun assignMemberToBoardCallbackFailed(error: String?) {
