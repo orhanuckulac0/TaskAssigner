@@ -108,8 +108,10 @@ class BoardDetailsActivity : BaseActivity(),
             setColor()
         }
 
-        if (mBoardDetails.dueDate != ""){
+        if (mBoardDetails.dueDate != "" || mBoardDetails.dueDate.isNotEmpty()){
             mSelectedDueDate = mBoardDetails.dueDate
+        }else{
+            mSelectedDueDate = resources.getString(R.string.select_due_date)
         }
 
         setupActionBar()
@@ -135,6 +137,7 @@ class BoardDetailsActivity : BaseActivity(),
         }
 
         binding?.btnUpdateBoardDetails?.setOnClickListener {
+            showProgressDialog(resources.getString(R.string.please_wait))
             if (mSelectedImageFileUri != null) {
                 uploadBoardImage()
             }else{
@@ -208,7 +211,6 @@ class BoardDetailsActivity : BaseActivity(),
         boardHashMap[Constants.DUE_DATE] = dueDate
 
         // make the callback for updating board on DB with the hashmap created above
-        showProgressDialog(resources.getString(R.string.please_wait))
         FirestoreClass().updateBoard(this, boardHashMap, mBoardDetails)
     }
 

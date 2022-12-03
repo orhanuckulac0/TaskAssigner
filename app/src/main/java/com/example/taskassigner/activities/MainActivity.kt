@@ -15,6 +15,7 @@ import androidx.core.view.GravityCompat
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.bumptech.glide.Glide
 import com.example.taskassigner.R
 import com.example.taskassigner.adapters.BoardItemsAdapter
@@ -43,6 +44,7 @@ class MainActivity :
     private var dividerCreated: Boolean = false
 
     private lateinit var mSharedPreferences: SharedPreferences
+    lateinit var swipeRefreshLayout: SwipeRefreshLayout
 
     private var resultLauncherForProfileUpdate = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             result ->
@@ -93,6 +95,15 @@ class MainActivity :
             val intent = Intent(this@MainActivity, CreateBoardActivity::class.java)
             intent.putExtra(Constants.NAME, mUserName)
             resultLauncherForCreateBoard.launch(intent)
+        }
+        refreshApp()
+    }
+
+    private fun refreshApp(){
+        swipeRefreshLayout = findViewById(R.id.swipeToRefresh)
+        swipeRefreshLayout.setOnRefreshListener{
+            swipeRefreshLayout.isRefreshing = false
+            onResume()
         }
     }
 

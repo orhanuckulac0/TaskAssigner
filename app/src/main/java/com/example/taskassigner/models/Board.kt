@@ -13,8 +13,9 @@ data class Board(
     var taskList: ArrayList<Task> = ArrayList(),
     var labelColor: String = "",
     var dueDate: String = "",
+    var date: Long = 0,
 
-): Parcelable {
+    ): Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readString()!!,
         parcel.readString()!!,
@@ -24,7 +25,8 @@ data class Board(
         parcel.readString()!!,
         parcel.createTypedArrayList(Task.CREATOR)!!,
         parcel.readString()!!,
-        parcel.readString()!!
+        parcel.readString()!!,
+        parcel.readLong()
     ) {
     }
 
@@ -38,6 +40,7 @@ data class Board(
         parcel.writeTypedList(taskList)
         parcel.writeString(labelColor)
         parcel.writeString(dueDate)
+        parcel.writeLong(date)
     }
 
     override fun describeContents(): Int {

@@ -25,6 +25,7 @@ import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import de.hdodenhof.circleimageview.CircleImageView
 import java.io.IOException
+import java.util.*
 
 class CreateBoardActivity : BaseActivity(), FirestoreClass.CreateBoardCallback {
     private var binding: ActivityCreateBoardBinding? = null
@@ -165,6 +166,8 @@ class CreateBoardActivity : BaseActivity(), FirestoreClass.CreateBoardCallback {
 
     private fun createBoardDocument(){
         val assignedUsersArrayList: ArrayList<String> = ArrayList()
+        val currentDateTime = Calendar.getInstance()
+        currentDateTime.timeInMillis
 
         // check if inputs are not empty
         if (validateBoardCreation()){
@@ -177,6 +180,7 @@ class CreateBoardActivity : BaseActivity(), FirestoreClass.CreateBoardCallback {
                 createdBy = mUserName,
                 createdByID = FirestoreClass().getCurrentUserId(),
                 assignedTo = assignedUsersArrayList,
+                date = currentDateTime.timeInMillis
             )
 
             FirestoreClass().createBoard(this, board)
