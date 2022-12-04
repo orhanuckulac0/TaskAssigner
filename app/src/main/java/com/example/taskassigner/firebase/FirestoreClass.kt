@@ -241,6 +241,21 @@ class FirestoreClass: BaseActivity() {
             }
     }
 
+    fun deleteMemberFromBoard(callback: DeleteMemberFromBoardCallback, board: Board){
+        val assignedToHashMap = HashMap<String, Any>()
+        assignedToHashMap[Constants.ASSIGNED_TO] = board.assignedTo
+
+        mFireStore.collection(Constants.BOARDS)
+            .document(board.documentId)
+            .update(assignedToHashMap)
+            .addOnSuccessListener {
+                callback.deleteMemberFromBoardSuccess()
+            }.addOnFailureListener {
+                e->
+                callback.deleteMemberFromBoardFailed(e.toString())
+            }
+    }
+
     fun getCurrentUserId(): String {
         val currentUser = FirebaseAuth.getInstance().currentUser
         var currentUserID = ""
@@ -313,5 +328,10 @@ class FirestoreClass: BaseActivity() {
     interface AssignMemberToBoardCallback {
         fun assignMemberToBoardCallbackSuccess(user: User)
         fun assignMemberToBoardCallbackFailed(error: String?)
+    }
+
+    interface DeleteMemberFromBoardCallback {
+        fun deleteMemberFromBoardSuccess()
+        fun deleteMemberFromBoardFailed(error: String?)
     }
 }
