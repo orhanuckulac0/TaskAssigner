@@ -12,7 +12,7 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.taskassigner.R
-import com.example.taskassigner.adapters.MemberListItemsAdapter
+import com.example.taskassigner.adapters.BoardMemberListItemsAdapter
 import com.example.taskassigner.databinding.ActivityMembersBinding
 import com.example.taskassigner.firebase.FirestoreClass
 import com.example.taskassigner.models.Board
@@ -37,6 +37,7 @@ class MembersActivity : BaseActivity(),
 
     private var binding: ActivityMembersBinding? = null
     private lateinit var mBoardDetails: Board
+    private lateinit var mCurrentUserID: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -183,14 +184,45 @@ class MembersActivity : BaseActivity(),
             .create().show()
     }
 
+    private fun dialogDeleteMemberFromBoard(user: User){
+        val dialogBuilder = AlertDialog.Builder(this)
+        dialogBuilder.setTitle("Delete Member From Board")
+        dialogBuilder.setMessage("Are you sure you want to delete ${user.name} from the board?\n" +
+                "This will cause the removal of this member from all cards and all tasks within this board.")
+        dialogBuilder.setCancelable(true)
+
+        dialogBuilder.setPositiveButton("Yes") { _, _->
+            Toast.makeText(this,"You can delete now.", Toast.LENGTH_LONG).show()
+        }
+
+        dialogBuilder.setNegativeButton("Cancel") { _, _->
+        }
+            .create()
+            .show()
+    }
+
+
     override fun getAssignedMembersListSuccess(usersList: ArrayList<User>) {
         cancelProgressDialog()
+        mCurrentUserID = FirestoreClass().getCurrentUserId()
 
         binding?.rvMembersList?.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         binding?.rvMembersList?.setHasFixedSize(true)
 
-        val adapter = MemberListItemsAdapter(this, usersList)
+        val adapter = BoardMemberListItemsAdapter(
+            this,
+            usersList,
+            mBoardDetails.createdByID,
+            mCurrentUserID
+        )
+
         binding?.rvMembersList?.adapter = adapter
+
+        adapter.setOnClickListener(object: BoardMemberListItemsAdapter.OnItemClickListener{
+            override fun onClick(user: User) {
+                dialogDeleteMemberFromBoard(user)
+            }
+        })
     }
 
     override fun getAssignedMembersListFailed(error: String?) {
