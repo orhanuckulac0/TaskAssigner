@@ -30,6 +30,12 @@ import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.FirebaseMessaging
+import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 class MainActivity :
     BaseActivity(),
@@ -122,6 +128,9 @@ class MainActivity :
             val layoutManager = LinearLayoutManager(this)
             rvBoardsList.layoutManager = LinearLayoutManager(this)
             rvBoardsList.setHasFixedSize(true)
+
+            // sort boardsList by ascending order of creation dates
+            boardsList.sortBy { it.date }
 
             // setup adapter
             val adapter = BoardItemsAdapter(this, boardsList)

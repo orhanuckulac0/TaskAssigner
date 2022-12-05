@@ -315,6 +315,9 @@ class BoardDetailsActivity : BaseActivity(),
 
         binding?.etBoardNameDetails?.setText(mBoardDetails.name)
         binding?.tvSelectDueDate?.text = mSelectedDueDate
+        if (mBoardDetails.description != ""){
+            binding?.etBoardDescription?.setText(mBoardDetails.description)
+        }
         binding?.tvMemberName?.text = mCreatedByUser.name
         binding?.tvMemberEmail?.text = mCreatedByUser.email
 

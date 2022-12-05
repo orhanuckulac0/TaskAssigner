@@ -55,4 +55,7 @@
     <string name="update_board">Update Board</string>
     <string name="hint_board_name">Board Name</string>
     <string name="board_details">Board Details</string>
+    <string name="board_description">Board Description</string>
+    <string name="board_description_optional">Board Description (optional)</string>
+    <string name="not_yet_added">Not yet added</string>
 </resources>

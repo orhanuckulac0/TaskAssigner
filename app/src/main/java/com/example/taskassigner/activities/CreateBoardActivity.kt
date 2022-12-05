@@ -3,8 +3,10 @@ package com.example.taskassigner.activities
 import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
+import android.app.DatePickerDialog
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -18,6 +20,7 @@ import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
 import com.example.taskassigner.R
 import com.example.taskassigner.databinding.ActivityCreateBoardBinding
+import com.example.taskassigner.dialogs.LabelColorListDialog
 import com.example.taskassigner.firebase.FirestoreClass
 import com.example.taskassigner.models.Board
 import com.example.taskassigner.utils.Constants
@@ -25,6 +28,7 @@ import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import de.hdodenhof.circleimageview.CircleImageView
 import java.io.IOException
+import java.text.SimpleDateFormat
 import java.util.*
 
 class CreateBoardActivity : BaseActivity(), FirestoreClass.CreateBoardCallback {
@@ -32,6 +36,11 @@ class CreateBoardActivity : BaseActivity(), FirestoreClass.CreateBoardCallback {
     private var mSelectedBoardImageFileUri: Uri? = null
     private lateinit var mUserName: String
     private var mBoardImageURL: String = ""
+
+    private var mSelectedColor = ""
+    private var mSelectedDueDate = ""
+    private var cal = Calendar.getInstance()
+    private lateinit var dateSetListener: DatePickerDialog.OnDateSetListener
 
     private val openGalleryLauncher: ActivityResultLauncher<Intent> =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()){
@@ -75,8 +84,23 @@ class CreateBoardActivity : BaseActivity(), FirestoreClass.CreateBoardCallback {
 
         setupActionBar()
 
+        dateSetListener = DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
+            cal.set(Calendar.YEAR, year)
+            cal.set(Calendar.MONTH, month)
+            cal.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+            updateDateInView()  // update view when user selects a date
+        }
+
         binding?.ivBoardImage?.setOnClickListener {
             requestStoragePermission()
+        }
+
+        binding?.tvSelectBoardLabelColor?.setOnClickListener {
+            showLabelColorsListDialog()
+        }
+
+        binding?.tvSelectBoardDueDate?.setOnClickListener {
+            createDatePicker()
         }
 
         binding?.btnCreate?.setOnClickListener {
@@ -164,13 +188,16 @@ class CreateBoardActivity : BaseActivity(), FirestoreClass.CreateBoardCallback {
         }
     }
 
-    private fun createBoardDocument(){
+    private fun createBoardDocument() {
         val assignedUsersArrayList: ArrayList<String> = ArrayList()
-        val currentDateTime = Calendar.getInstance()
-        currentDateTime.timeInMillis
+        val sdf = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.US)
+        val currentDate = sdf.format(Date())
 
-        // check if inputs are not empty
-        if (validateBoardCreation()){
+        val boardDescription = binding?.etBoardDescription?.text.toString()
+
+
+//         check if inputs are not empty
+        if (validateBoardCreation()) {
 
             assignedUsersArrayList.add(FirestoreClass().getCurrentUserId())
 
@@ -180,7 +207,10 @@ class CreateBoardActivity : BaseActivity(), FirestoreClass.CreateBoardCallback {
                 createdBy = mUserName,
                 createdByID = FirestoreClass().getCurrentUserId(),
                 assignedTo = assignedUsersArrayList,
-                date = currentDateTime.timeInMillis
+                labelColor= mSelectedColor,
+                dueDate = mSelectedDueDate,
+                date = currentDate,
+                description = boardDescription
             )
 
             FirestoreClass().createBoard(this, board)
@@ -203,10 +233,58 @@ class CreateBoardActivity : BaseActivity(), FirestoreClass.CreateBoardCallback {
                 cancelProgressDialog()
                 Toast.makeText(this, "Please enter a name.", Toast.LENGTH_LONG).show()
                 false
-            }else -> {
+            }
+            else -> {
                 true
             }
         }
+    }
+
+    private fun createDatePicker(){
+        DatePickerDialog(this,
+            dateSetListener,
+            cal.get(Calendar.YEAR),
+            cal.get(Calendar.MONTH),
+            cal.get(Calendar.DAY_OF_MONTH)
+        ).show()
+    }
+
+    private fun updateDateInView(){
+        val myFormat = "dd.MM.yyyy"
+        val sdf = SimpleDateFormat(myFormat, Locale.getDefault())
+
+        binding?.tvSelectBoardDueDate?.text = sdf.format(cal.time).toString()
+
+        mSelectedDueDate = binding?.tvSelectBoardDueDate?.text.toString()
+    }
+
+    // return list of color strings
+    private fun colorsList(): ArrayList<String>{
+        return ArrayList(resources.getStringArray(R.array.label_colors).asList())
+    }
+
+    // set color of the background on TaskListActivity for cards
+    private fun setColor(){
+        binding?.tvSelectBoardLabelColor?.text = ""
+        binding?.tvSelectBoardLabelColor?.setBackgroundColor(Color.parseColor(mSelectedColor))
+    }
+
+    // create an object of the LalColorListDialog class
+    // show the custom dialog for label color picking for cards
+    private fun showLabelColorsListDialog(){
+        val colorsList: ArrayList<String> = colorsList()
+        val listDialog = object : LabelColorListDialog(this,
+            colorsList,
+            resources.getString(R.string.select_color),
+            mSelectedColor
+        ){
+            override fun onItemSelected(color: String) {
+                mSelectedColor = color
+                setColor()
+            }
+        }
+        listDialog.create()
+        listDialog.show()
     }
 
     override fun createBoardSuccess() {
