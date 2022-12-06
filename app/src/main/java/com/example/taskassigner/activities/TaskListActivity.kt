@@ -8,6 +8,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.taskassigner.R
 import com.example.taskassigner.adapters.TaskListItemsAdapter
 import com.example.taskassigner.databinding.ActivityTaskListBinding
@@ -31,6 +32,7 @@ class TaskListActivity : BaseActivity(),
     private lateinit var mBoardDetails: Board
     private lateinit var mMenuItemDeleteBoard: MenuItem
     lateinit var mAssignedMemberDetailList: ArrayList<User>
+    lateinit var swipeRefreshLayout: SwipeRefreshLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,9 +46,21 @@ class TaskListActivity : BaseActivity(),
         // make get task details callback on onResume function,
         // so that I can update screen if data is changed when user is on MembersActivity
         // tested with registerForActivityResult but code is cleaner this way
+
+        // this is for swipe to refresh
+        refreshApp()
     }
 
-    private fun setupActionBar(){
+    private fun refreshApp(){
+        swipeRefreshLayout = findViewById(R.id.swipeToRefresh)
+        swipeRefreshLayout.setOnRefreshListener{
+            swipeRefreshLayout.isRefreshing = false
+            onResume()
+        }
+    }
+
+
+        private fun setupActionBar(){
         setSupportActionBar(binding?.toolbarTaskListActivity)
         val actionBar = supportActionBar
         if (actionBar != null){

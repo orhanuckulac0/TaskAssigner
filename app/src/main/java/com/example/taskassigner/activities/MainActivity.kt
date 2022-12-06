@@ -102,6 +102,8 @@ class MainActivity :
             intent.putExtra(Constants.NAME, mUserName)
             resultLauncherForCreateBoard.launch(intent)
         }
+
+        // this is for swipe to refresh functionality
         refreshApp()
     }
 
