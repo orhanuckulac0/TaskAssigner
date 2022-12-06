@@ -13,10 +13,7 @@ import com.example.taskassigner.R
 import com.example.taskassigner.adapters.TaskListItemsAdapter
 import com.example.taskassigner.databinding.ActivityTaskListBinding
 import com.example.taskassigner.firebase.FirestoreClass
-import com.example.taskassigner.models.Board
-import com.example.taskassigner.models.Card
-import com.example.taskassigner.models.Task
-import com.example.taskassigner.models.User
+import com.example.taskassigner.models.*
 import com.example.taskassigner.utils.Constants
 import kotlin.collections.ArrayList
 
@@ -32,7 +29,7 @@ class TaskListActivity : BaseActivity(),
     private lateinit var mBoardDetails: Board
     private lateinit var mMenuItemDeleteBoard: MenuItem
     lateinit var mAssignedMemberDetailList: ArrayList<User>
-    lateinit var swipeRefreshLayout: SwipeRefreshLayout
+    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

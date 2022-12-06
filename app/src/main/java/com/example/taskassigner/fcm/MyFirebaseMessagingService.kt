@@ -4,60 +4,62 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.NotificationManager.IMPORTANCE_HIGH
 import android.app.PendingIntent
+import android.app.PendingIntent.FLAG_IMMUTABLE
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Color
-import android.media.RingtoneManager
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.example.taskassigner.R
 import com.example.taskassigner.activities.MainActivity
-import com.example.taskassigner.activities.SignInActivity
-import com.example.taskassigner.firebase.FirestoreClass
+import com.example.taskassigner.utils.Constants
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
-import kotlin.random.Random
+import java.util.*
+import kotlin.random.Random.Default.nextInt
 
-private const val CHANNEL_ID = "taskassigner_notification_channel"
+private const val CHANNEL_ID = "my_channel"
 
-class MyFirebaseMessagingService: FirebaseMessagingService() {
+class MyFirebaseMessagingService : FirebaseMessagingService() {
+    companion object {
+        var sharedPref: SharedPreferences? = null
 
+        var token: String?
+            get() {
+                return sharedPref?.getString("token", "")
+            }
+            set(value) {
+                sharedPref?.edit()?.putString("token", value)?.apply()
+            }
+    }
+
+    override fun onNewToken(newToken: String) {
+        super.onNewToken(newToken)
+        token = newToken
+        sendRegistrationToServer(token)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.M)
     override fun onMessageReceived(message: RemoteMessage) {
         super.onMessageReceived(message)
 
-        val intent = if (FirestoreClass().getCurrentUserId().isNotEmpty()){
-            Intent(this, MainActivity::class.java)
-        } else {
-            Intent(this, SignInActivity::class.java)
-        }
+        val intent = Intent(this, MainActivity::class.java)
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        val notificationID = Random.nextInt()
+        val notificationID = nextInt()
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createNotificationChannel(notificationManager)
         }
 
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                Intent.FLAG_ACTIVITY_NEW_TASK or
-                Intent.FLAG_ACTIVITY_CLEAR_TASK
-        )
-        val pendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
-        } else {
-            PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE)
-        }
-
-        val channelId = this.resources.getString(R.string.default_notification_channel_id)
-        val defaultSoundURI = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-
-        val notification = NotificationCompat.Builder(this, channelId)
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        val pendingIntent = PendingIntent.getActivity(this, 0, intent, FLAG_IMMUTABLE)
+        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(message.data["title"])
             .setContentText(message.data["message"])
-            .setSmallIcon(R.drawable.ic_stat_ic_notification)
+            .setSmallIcon(R.drawable.ic_baseline_error_outline_24)
             .setAutoCancel(true)
-            .setSound(defaultSoundURI)
             .setContentIntent(pendingIntent)
             .build()
 
@@ -65,34 +67,21 @@ class MyFirebaseMessagingService: FirebaseMessagingService() {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun createNotificationChannel(notificationManager: NotificationManager){
-        val channelName = "channelName"
+    private fun createNotificationChannel(notificationManager: NotificationManager) {
+        val channelName = "taskAssignerChannel"
         val channel = NotificationChannel(CHANNEL_ID, channelName, IMPORTANCE_HIGH).apply {
-            description = "My channel description"
+            description = "taskAssignerChannelDescription"
             enableLights(true)
+            enableVibration(true)
             lightColor = Color.GREEN
         }
         notificationManager.createNotificationChannel(channel)
     }
 
-    /**
-     * Called if the FCM registration token is updated. This may occur if the security of
-     * the previous token had been compromised. Note that this is called when the
-     * FCM registration token is initially generated so this is where you would retrieve the token.
-     */
-    override fun onNewToken(newToken: String) {
-        super.onNewToken(newToken)
-        token = newToken
-    }
-
-    companion object {
-        var sharedPref: SharedPreferences? = null
-        var token: String?
-        get(){
-            return sharedPref?.getString("token", "")
-        }
-        set(value){
-            sharedPref?.edit()?.putString("token", value)?.apply()
-        }
+    private fun sendRegistrationToServer(token: String?) {
+        val sharedPreferences = this.getSharedPreferences(Constants.TASKASSIGNER_PREFERENCES, Context.MODE_PRIVATE)
+        val editor: SharedPreferences.Editor = sharedPreferences.edit()
+        editor.putString(Constants.FCM_TOKEN, token)
+        editor.apply()
     }
 }

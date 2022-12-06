@@ -27,7 +27,9 @@ object Constants{
     const val TASK_LIST_ITEM_POSITION: String = "task_list_item_position"
     const val CARD_LIST_ITEM_POSITION: String = "card_list_item_position"
 
-    const val FCM_BASE_URL: String = "https://fcm.googleapis.com"
+    const val BASE_URL = "https://fcm.googleapis.com"
+    const val SERVER_KEY = "AAAAyYC1K7U:APA91bFyY5s9kMcBxTLHkRNtumr_F8cBtpgmIfBQ2_-rDk5VE5YocDwBOuS1mhRE5SXL8S6Dw3XT0VJl-_S558SxOyXH31Zo3TUuruESTS8qkbqZ5eK4coyILqYhZwiOQEFuba7s4sYP"
     const val CONTENT_TYPE = "application/json"
-    const val FCM_SERVER_KEY:String = "AAAAyYC1K7U:APA91bFyY5s9kMcBxTLHkRNtumr_F8cBtpgmIfBQ2_-rDk5VE5YocDwBOuS1mhRE5SXL8S6Dw3XT0VJl-_S558SxOyXH31Zo3TUuruESTS8qkbqZ5eK4coyILqYhZwiOQEFuba7s4sYP"
+
+    const val ADDED_TO_BOARD = "You have been added to a board."
 }

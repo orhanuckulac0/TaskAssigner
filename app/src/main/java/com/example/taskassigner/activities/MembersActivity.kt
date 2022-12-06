@@ -2,6 +2,8 @@ package com.example.taskassigner.activities
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
+import android.content.ContentValues
+import android.content.Context
 import android.os.*
 import android.util.Log
 import android.view.Menu
@@ -13,13 +15,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.taskassigner.R
 import com.example.taskassigner.adapters.BoardMemberListItemsAdapter
 import com.example.taskassigner.databinding.ActivityMembersBinding
+import com.example.taskassigner.fcm.MyFirebaseMessagingService
 import com.example.taskassigner.firebase.FirestoreClass
-import com.example.taskassigner.models.Board
-import com.example.taskassigner.models.PushNotification
-import com.example.taskassigner.models.User
+import com.example.taskassigner.models.*
 import com.example.taskassigner.utils.Constants
-import com.example.taskassigner.utils.RetrofitInstance
-import com.google.gson.Gson
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -34,6 +34,7 @@ class MembersActivity : BaseActivity(),
     private var binding: ActivityMembersBinding? = null
     private lateinit var mBoardDetails: Board
     private lateinit var mCurrentUserID: String
+    private val mTopicAssignToBoard = "/assignMemberToBoard"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,7 +42,6 @@ class MembersActivity : BaseActivity(),
         setContentView(binding?.root)
 
         setupActionBar()
-//        MyFirebaseMessagingService.sharedPref = getSharedPreferences(Constants.TASKASSIGNER_PREFERENCES, MODE_PRIVATE)
 
         if (intent.hasExtra(Constants.BOARD_DETAIL)){
             if (Build.VERSION.SDK_INT >= 33) {
@@ -52,21 +52,25 @@ class MembersActivity : BaseActivity(),
         }
         mCurrentUserID = FirestoreClass().getCurrentUserId()
 
+        MyFirebaseMessagingService.sharedPref = getSharedPreferences("sharedPref", Context.MODE_PRIVATE)
+        FirebaseMessaging.getInstance().subscribeToTopic(mTopicAssignToBoard)
+
         showProgressDialog(resources.getString(R.string.please_wait))
         FirestoreClass().getAssignedMembersList(this, mBoardDetails.assignedTo)
     }
 
-    fun sendNotification(notification: PushNotification) = CoroutineScope(Dispatchers.IO).launch {
+    private fun sendNotification(notification: PushNotification) = CoroutineScope(Dispatchers.IO).launch {
         try {
             val response = RetrofitInstance.api.postNotification(notification)
-            if (response.isSuccessful){
-                Log.d("MembersActivity Success", "Response: ${Gson().toJson(response)}")
-            }else{
-                Log.e("MembersActivity Failed", response.errorBody().toString())
+            if(response.isSuccessful) {
+                Log.d(ContentValues.TAG, "Response: $response")
+            } else {
+                Log.e(ContentValues.TAG, response.errorBody().toString())
             }
-        } catch (e: Exception){
-            Log.e("MembersActivity Error", e.toString())
+        } catch(e: Exception) {
+            Log.e(ContentValues.TAG, e.toString())
         }
+
     }
 
     private fun setupActionBar(){
@@ -206,18 +210,21 @@ class MembersActivity : BaseActivity(),
 
     // TO ADD MEMBER TO DB CALLBACK RESPONSE
     override fun assignMemberToBoardCallbackSuccess(user: User) {
-//        token = user.fcmToken
-//        PushNotification(
-//            NotificationData("Hello", "Test"),
-//            "dFyMAtuWSPeLv0Ix9e_pX7:APA91bEObPd64OJmo8mojxPeK9OEWO004_khRmGaoNzpC7xB3L7mbCDDt6INAG6YKArpSSsqMQPJ2s7tirDh1RmIkebIwBX8ZqaqalgGkbtF8BthQccfYxZD8v6cq5q7uHOWG5ckVVtN"
-//        ).also {
-//            sendNotification(it)
-//        }
+        cancelProgressDialog()
+        Log.i("User FCM token: ", user.fcmToken)
+        // send the notification to assigned member
+        PushNotification(
+            NotificationData(Constants.ADDED_TO_BOARD, "${mBoardDetails.createdBy} has added you to a new board. " +
+                    "Click this to open TaskAssigner."),
+            user.fcmToken
+        ).also {
+            sendNotification(it)
+        }
     }
-
 
     override fun assignMemberToBoardCallbackFailed(error: String?) {
         Log.i("Error adding member", error.toString())
+        cancelProgressDialog()
     }
 
     override fun deleteMemberFromBoardSuccess() {
@@ -234,4 +241,4 @@ class MembersActivity : BaseActivity(),
             binding = null
         }
     }
-    }
+}

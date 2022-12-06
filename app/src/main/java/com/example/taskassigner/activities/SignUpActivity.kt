@@ -130,7 +130,6 @@ class SignUpActivity : BaseActivity(), FirestoreClass.UserRegistrationCallback {
         }
     }
 
-
     override fun userRegisteredSuccess() {
         Toast.makeText(
             baseContext, "Authentication successful. User registered.",

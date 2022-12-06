@@ -21,18 +21,15 @@ import com.example.taskassigner.R
 import com.example.taskassigner.adapters.BoardItemsAdapter
 import com.example.taskassigner.databinding.ActivityMainBinding
 import com.example.taskassigner.firebase.FirestoreClass
-import com.example.taskassigner.models.Board
-import com.example.taskassigner.models.User
+import com.example.taskassigner.models.*
 import com.example.taskassigner.utils.Constants
+import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.imageview.ShapeableImageView
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.FirebaseMessaging
-import java.text.SimpleDateFormat
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
@@ -48,9 +45,9 @@ class MainActivity :
     private var binding: ActivityMainBinding? = null
     private lateinit var mUserName: String
     private var dividerCreated: Boolean = false
-
+    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var mSharedPreferences: SharedPreferences
-    lateinit var swipeRefreshLayout: SwipeRefreshLayout
+    private val mTAG = "MainActivity"
 
     private var resultLauncherForProfileUpdate = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             result ->
@@ -85,13 +82,27 @@ class MainActivity :
         binding?.navView?.setNavigationItemSelectedListener(this)
 
         mSharedPreferences = this.getSharedPreferences(Constants.TASKASSIGNER_PREFERENCES, Context.MODE_PRIVATE)
+
+        // Variable is used get the value either token is updated in the database or not.
         val tokenUpdated = mSharedPreferences.getBoolean(Constants.FCM_TOKEN_UPDATED, false)
 
-        if (!tokenUpdated){
-            FirebaseMessaging.getInstance().token.addOnSuccessListener(this@MainActivity){
-                updateFCMToken(it)
-            }
+        if (!tokenUpdated) {
+            FirebaseMessaging.getInstance().token
+                .addOnSuccessListener(this@MainActivity) {
+                    updateFCMToken(it)
+                }
         }
+
+        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.w(mTAG, "Fetching FCM registration token failed", task.exception)
+                return@OnCompleteListener
+            }
+
+            // Get new FCM registration token
+            val token = task.result
+            Log.i("token: ", token)
+        })
 
         // get user data and board data onResume
         // so that if new data or board is created user will see the updated UI
@@ -210,9 +221,6 @@ class MainActivity :
             R.id.navSignOut -> {
                 Firebase.auth.signOut()
 
-                // reset the shared preferences to empty
-                mSharedPreferences.edit().clear().apply()
-
                 val intent = Intent(this, IntroActivity::class.java)
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
                 startActivity(intent)
@@ -235,10 +243,6 @@ class MainActivity :
             .into(findViewById<ShapeableImageView>(R.id.profileImage))
 
         findViewById<TextView>(R.id.tvUsername).text = user.name
-
-        val editor: SharedPreferences.Editor = mSharedPreferences.edit()
-        editor.putBoolean(Constants.FCM_TOKEN_UPDATED, true)
-        editor.apply()
 
         cancelProgressDialog()
     }
