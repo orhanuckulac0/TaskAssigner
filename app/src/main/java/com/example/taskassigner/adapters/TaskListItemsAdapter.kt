@@ -15,12 +15,14 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.taskassigner.R
 import com.example.taskassigner.activities.TaskListActivity
 import com.example.taskassigner.databinding.ItemTaskBinding
+import com.example.taskassigner.firebase.FirestoreClass
 import com.example.taskassigner.models.Task
 import java.util.*
 import kotlin.collections.ArrayList
 
 open class TaskListItemsAdapter(private val context: Context,
-                                private val list: ArrayList<Task>):
+                                private val list: ArrayList<Task>,
+                                private val createdByID: String):
     RecyclerView.Adapter<TaskListItemsAdapter.ViewHolder>() {
 
     class ViewHolder(binding: ItemTaskBinding) : RecyclerView.ViewHolder(binding.root){
@@ -73,6 +75,14 @@ open class TaskListItemsAdapter(private val context: Context,
         if (position == list.size-1){
             holder.tvAddTaskList.visibility = View.VISIBLE
 
+            // if current user is not the task creator, change UI
+            if (FirestoreClass().getCurrentUserId() != createdByID){
+                holder.tvAddTaskList.text = context.getString(R.string.no_tasks_available)
+            }
+            if (FirestoreClass().getCurrentUserId() != createdByID && list.size > 1){
+                holder.tvAddTaskList.visibility = View.GONE
+            }
+
             // make everything about cards GONE
             holder.llTaskItem.visibility = View.GONE
         }else{
@@ -83,88 +93,97 @@ open class TaskListItemsAdapter(private val context: Context,
         
         holder.tvTaskListTitle.text = model.title
 
-        holder.tvAddTaskList.setOnClickListener {
-            holder.tvAddTaskList.visibility = View.GONE
-            holder.cvAddTaskListName.visibility = View.VISIBLE
-        }
-
-        holder.ibCloseListName.setOnClickListener {
-            holder.tvAddTaskList.visibility = View.VISIBLE
-            holder.cvAddTaskListName.visibility = View.GONE
-        }
-
-        holder.ibDoneListName.setOnClickListener {
-            val listName = holder.etTaskListName.text.toString()
-            // if user input is not empty,
-            // create new taskList
-            if (listName.isNotEmpty()){
-                if (context is TaskListActivity){
-                    context.createTaskList(listName)
-                }
-            }else{
-                Toast.makeText(context, "Please Enter List name", Toast.LENGTH_LONG).show()
+        if (FirestoreClass().getCurrentUserId() == createdByID){
+            // when clicked to edit button
+            holder.tvAddTaskList.setOnClickListener {
+                holder.tvAddTaskList.visibility = View.GONE
+                holder.cvAddTaskListName.visibility = View.VISIBLE
             }
-        }
 
-        // when clicked to edit button
-        holder.ibEditListName.setOnClickListener {
-            holder.etEditTaskListName.setText(model.title)
-
-            holder.llTitleView.visibility = View.GONE
-            holder.cvEditTaskListName.visibility = View.VISIBLE
-        }
-
-
-        // closing the edit current list name UI
-        holder.ibCloseEditableView.setOnClickListener {
-            holder.llTitleView.visibility = View.VISIBLE
-            holder.cvEditTaskListName.visibility = View.GONE
-        }
-
-        // update the current list
-        holder.ibDoneEditListName.setOnClickListener {
-            val editedListName = holder.etEditTaskListName.text.toString()
-            if (editedListName.isNotEmpty()){
-                if (context is TaskListActivity){
-                    holder.llTitleView.visibility = View.VISIBLE
-                    holder.cvEditTaskListName.visibility = View.GONE
-                    context.updateTaskList(position, editedListName ,model)
-                }
-            }else{
-                Toast.makeText(context, "Please Enter List name", Toast.LENGTH_LONG).show()
+            holder.ibCloseListName.setOnClickListener {
+                holder.tvAddTaskList.visibility = View.VISIBLE
+                holder.cvAddTaskListName.visibility = View.GONE
             }
-        }
 
-        // delete the current list
-        holder.ibDeleteList.setOnClickListener {
-            alertDialogForDeleteList(position, model.title)
-        }
-
-        // enable add card name cardView
-        holder.tvAddCard.setOnClickListener {
-            holder.tvAddCard.visibility= View.GONE
-            holder.cvAddCard.visibility = View.VISIBLE
-        }
-
-        // close add card cardView
-        holder.ibCloseCardName.setOnClickListener {
-            holder.tvAddCard.visibility= View.VISIBLE
-            holder.cvAddCard.visibility = View.GONE
-        }
-
-        // save card name cardView text
-        holder.ibDoneCardName.setOnClickListener {
-
-            val cardName = holder.etCardName.text.toString()
-            if (cardName.isNotEmpty()){
-                if (context is TaskListActivity){
-                    holder.tvAddCard.visibility= View.VISIBLE
-                    holder.cvAddCard.visibility = View.GONE
-                    context.addCardToTaskList(position, cardName)
+            holder.ibDoneListName.setOnClickListener {
+                val listName = holder.etTaskListName.text.toString()
+                // if user input is not empty,
+                // create new taskList
+                if (listName.isNotEmpty()){
+                    if (context is TaskListActivity){
+                        context.createTaskList(listName)
+                    }
+                }else{
+                    Toast.makeText(context, "Please Enter List name", Toast.LENGTH_LONG).show()
                 }
-            }else{
-                Toast.makeText(context, "Please Enter List name", Toast.LENGTH_LONG).show()
             }
+
+            // when clicked to edit button
+            holder.ibEditListName.setOnClickListener {
+                holder.etEditTaskListName.setText(model.title)
+
+                holder.llTitleView.visibility = View.GONE
+                holder.cvEditTaskListName.visibility = View.VISIBLE
+            }
+
+
+            // closing the edit current list name UI
+            holder.ibCloseEditableView.setOnClickListener {
+                holder.llTitleView.visibility = View.VISIBLE
+                holder.cvEditTaskListName.visibility = View.GONE
+            }
+
+            // update the current list
+            holder.ibDoneEditListName.setOnClickListener {
+                val editedListName = holder.etEditTaskListName.text.toString()
+                if (editedListName.isNotEmpty()){
+                    if (context is TaskListActivity){
+                        holder.llTitleView.visibility = View.VISIBLE
+                        holder.cvEditTaskListName.visibility = View.GONE
+                        context.updateTaskList(position, editedListName ,model)
+                    }
+                }else{
+                    Toast.makeText(context, "Please Enter List name", Toast.LENGTH_LONG).show()
+                }
+            }
+
+            // delete the current list
+            holder.ibDeleteList.setOnClickListener {
+                alertDialogForDeleteList(position, model.title)
+            }
+
+            // enable add card name cardView
+            holder.tvAddCard.setOnClickListener {
+                holder.tvAddCard.visibility= View.GONE
+                holder.cvAddCard.visibility = View.VISIBLE
+            }
+
+            // close add card cardView
+            holder.ibCloseCardName.setOnClickListener {
+                holder.tvAddCard.visibility= View.VISIBLE
+                holder.cvAddCard.visibility = View.GONE
+            }
+
+            // save card name cardView text
+            holder.ibDoneCardName.setOnClickListener {
+
+                val cardName = holder.etCardName.text.toString()
+                if (cardName.isNotEmpty()){
+                    if (context is TaskListActivity){
+                        holder.tvAddCard.visibility= View.VISIBLE
+                        holder.cvAddCard.visibility = View.GONE
+                        context.addCardToTaskList(position, cardName)
+                    }
+                }else{
+                    Toast.makeText(context, "Please Enter List name", Toast.LENGTH_LONG).show()
+                }
+            }
+        }else{
+            holder.ibEditListName.visibility = View.GONE
+            holder.ibDeleteList.visibility = View.GONE
+
+            // now make changes in CardListItemsAdapter to see whether card is empty or not
+            // to adjust UI accordingly
         }
 
         // setup cards recyclerview with CardsListItemsAdapter
@@ -209,7 +228,6 @@ open class TaskListItemsAdapter(private val context: Context,
                     (context as TaskListActivity)
                         .updateCardsInTaskList(position, list[position].cards)
                 }
-
             }
         )
         helper.attachToRecyclerView(holder.rvCardList)
@@ -225,7 +243,7 @@ open class TaskListItemsAdapter(private val context: Context,
         builder.setMessage("Are you sure you want to delete $title?")
         builder.setIcon(R.drawable.ic_baseline_warning_24)
 
-        builder.setPositiveButton("Yes") { dialogInterface, which ->
+        builder.setPositiveButton("Yes") { dialogInterface, _ ->
             dialogInterface.dismiss()
 
             // delete the current TaskList
@@ -235,7 +253,7 @@ open class TaskListItemsAdapter(private val context: Context,
             }
         }
 
-        builder.setNegativeButton("No") { dialogInterface, which->
+        builder.setNegativeButton("No") { dialogInterface, _ ->
             dialogInterface.dismiss()
         }
         val alertDialog: AlertDialog = builder.create()

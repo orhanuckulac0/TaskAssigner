@@ -58,4 +58,5 @@
     <string name="board_description">Board Description</string>
     <string name="board_description_optional">Board Description (optional)</string>
     <string name="not_yet_added">Not yet added</string>
+    <string name="no_tasks_available">No Tasks Available</string>
 </resources>

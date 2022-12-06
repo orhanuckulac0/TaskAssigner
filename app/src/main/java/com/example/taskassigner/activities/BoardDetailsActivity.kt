@@ -16,6 +16,7 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import com.bumptech.glide.Glide
 import com.example.taskassigner.R
 import com.example.taskassigner.databinding.ActivityBoardDetailsBinding
@@ -41,6 +42,7 @@ class BoardDetailsActivity : BaseActivity(),
     private var mSelectedColor = ""
     private lateinit var mBoardDetails: Board
     private lateinit var mCreatedByUser: User
+    private lateinit var mCurrentUserID: String
 
     private var mSelectedDueDate = ""
     private var cal = Calendar.getInstance()
@@ -116,10 +118,6 @@ class BoardDetailsActivity : BaseActivity(),
 
         setupActionBar()
 
-        binding?.ivUpdateBoardImage?.setOnClickListener {
-            requestStoragePermission()
-        }
-
         dateSetListener = DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
             cal.set(Calendar.YEAR, year)
             cal.set(Calendar.MONTH, month)
@@ -127,22 +125,35 @@ class BoardDetailsActivity : BaseActivity(),
             updateDateInView()  // update view when user selects a date
         }
 
+        // check if current user is the board creator, if so, allow user to update board
+        mCurrentUserID = FirestoreClass().getCurrentUserId()
 
-        binding?.tvSelectLabelColor?.setOnClickListener {
-            showLabelColorsListDialog()
-        }
-
-        binding?.tvSelectDueDate?.setOnClickListener {
-            createDatePicker()
-        }
-
-        binding?.btnUpdateBoardDetails?.setOnClickListener {
-            showProgressDialog(resources.getString(R.string.please_wait))
-            if (mSelectedImageFileUri != null) {
-                uploadBoardImage()
-            }else{
-                updateBoard()
+        if (mCurrentUserID == mBoardDetails.createdByID){
+            binding?.ivUpdateBoardImage?.setOnClickListener {
+                requestStoragePermission()
             }
+
+            binding?.tvSelectLabelColor?.setOnClickListener {
+                showLabelColorsListDialog()
+            }
+
+            binding?.tvSelectDueDate?.setOnClickListener {
+                createDatePicker()
+            }
+
+            binding?.btnUpdateBoardDetails?.setOnClickListener {
+                showProgressDialog(resources.getString(R.string.please_wait))
+                if (mSelectedImageFileUri != null) {
+                    uploadBoardImage()
+                }else{
+                    updateBoard()
+                }
+            }
+        }else{
+            binding?.etBoardNameDetails?.isFocusable = false
+            binding?.etBoardDescription?.isFocusable = false
+
+            binding?.btnUpdateBoardDetails?.isVisible = false
         }
     }
 

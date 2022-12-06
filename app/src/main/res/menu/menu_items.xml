@@ -8,7 +8,7 @@
     <item android:id="@+id/actionBoardDetails"
         android:orderInCategory="100"
         android:title="@string/board_details"
-        android:visible="false"
+        android:visible="true"
         app:showAsAction="never" />
     <item android:id="@+id/actionDeleteBoard"
         android:orderInCategory="100"
