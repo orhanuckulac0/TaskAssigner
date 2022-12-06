@@ -12,7 +12,7 @@ import com.example.taskassigner.models.SelectedMembers
 
 open class CardMemberListItemsAdapter(private val context: Context,
                                       private val list: ArrayList<SelectedMembers>,
-                                      private val assignMembers: Boolean )
+                                      private val assignMembers: Boolean)
     : RecyclerView.Adapter<CardMemberListItemsAdapter.ViewHolder>() {
 
     private var onClickListener: OnCLickListener? = null
@@ -29,7 +29,7 @@ open class CardMemberListItemsAdapter(private val context: Context,
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val model = list[position]
 
-        // get list.sie -1 because + button to add members is also in the view
+        // get list.size -1 because + button to add members is also in the view
         if (position == list.size - 1 && assignMembers){
             holder.ivAddMember.visibility = View.VISIBLE
             holder.ivSelectedMemberImage.visibility = View.GONE

@@ -32,6 +32,7 @@ class CardDetailsActivity : BaseActivity(),
     private lateinit var mBoardDetails: Board
     private lateinit var mCurrentCard: Card
     private lateinit var mMembersDetailList: ArrayList<User>
+    private lateinit var mCurrentUserID: String
 
     private var mTaskListPosition = -1
     private var mCardPosition = -1
@@ -49,48 +50,65 @@ class CardDetailsActivity : BaseActivity(),
         getIntentData()
         setupActionBar()
 
+        mCurrentUserID = FirestoreClass().getCurrentUserId()
+
         // populate edit text with current card name
         if (mBoardDetails != null) {
             val mCurrentCardName = mCurrentCard.name
             binding?.etCardNameDetails?.setText(mCurrentCardName)
+
+            if (mCurrentUserID != mBoardDetails.createdByID){
+                binding?.etCardNameDetails?.isFocusable = false
+                binding?.etCardDescriptionDetails?.isFocusable = false
+            }
 
             // if color is not selected yet, don't set mSelectedColor
             if (mCurrentCard.labelColor != ""){
                 mSelectedColor = mCurrentCard.labelColor
                 setColor()
             }
-        }
 
-
-        binding?.btnUpdateCardDetails?.setOnClickListener {
-            if (binding?.etCardNameDetails?.text.toString().isNotEmpty()){
-                showProgressDialog(resources.getString(R.string.please_wait))
-                updateCardDetails()
+            if (mCurrentCard.description != ""){
+                binding?.etCardDescriptionDetails?.setText(mCurrentCard.description)
             }else{
-                Toast.makeText(
-                    this,
-                    "Please enter a card name.",
-                    Toast.LENGTH_LONG
-                ).show()
+                binding?.etCardDescriptionDetails?.setText(getString(R.string.no_description_available))
             }
         }
-        binding?.tvSelectLabelColor?.setOnClickListener {
-            showLabelColorsListDialog()
-        }
 
-        binding?.tvSelectMembers?.setOnClickListener{
-            membersListDialog()
-        }
+        if (mCurrentUserID == mBoardDetails.createdByID){
+            binding?.btnUpdateCardDetails?.setOnClickListener {
+                if (binding?.etCardNameDetails?.text.toString().isNotEmpty()){
+                    showProgressDialog(resources.getString(R.string.please_wait))
+                    updateCardDetails()
+                }else{
+                    Toast.makeText(
+                        this,
+                        "Please enter a card name.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
 
-        dateSetListener = DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
-            cal.set(Calendar.YEAR, year)
-            cal.set(Calendar.MONTH, month)
-            cal.set(Calendar.DAY_OF_MONTH, dayOfMonth)
-            updateDateInView()
-        }
+            binding?.tvSelectLabelColor?.setOnClickListener {
+                showLabelColorsListDialog()
+            }
 
-        binding?.tvSelectDueDate?.setOnClickListener {
-            createDatePicker()
+            binding?.tvSelectMembers?.setOnClickListener{
+                membersListDialog()
+            }
+
+            dateSetListener = DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
+                cal.set(Calendar.YEAR, year)
+                cal.set(Calendar.MONTH, month)
+                cal.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+                updateDateInView()
+            }
+
+            binding?.tvSelectDueDate?.setOnClickListener {
+                createDatePicker()
+            }
+        }else{
+            binding?.btnUpdateCardDetails?.visibility = View.GONE
         }
 
         // get the current card' selected members
@@ -201,13 +219,15 @@ class CardDetailsActivity : BaseActivity(),
             val adapter = CardMemberListItemsAdapter(this, selectedMembersList, true)
             binding?.rvSelectedMembersList?.adapter = adapter
 
-            adapter.setOnClickListener(
-                object: CardMemberListItemsAdapter.OnCLickListener{
-                    override fun onClick() {
-                        membersListDialog()
+            if (mCurrentUserID == mBoardDetails.createdByID){
+                adapter.setOnClickListener(
+                    object: CardMemberListItemsAdapter.OnCLickListener{
+                        override fun onClick() {
+                            membersListDialog()
+                        }
                     }
-                }
-            )
+                )
+            }
         }else{
             binding?.tvSelectMembers?.visibility = View.VISIBLE
             binding?.rvSelectedMembersList?.visibility = View.GONE
@@ -354,6 +374,14 @@ class CardDetailsActivity : BaseActivity(),
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_delete_card, menu)
         return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
+        // allow only board creator to delete cards
+        if (mCurrentUserID != mBoardDetails.createdByID){
+            menu!!.findItem(R.id.actionDeleteCard).isVisible = false
+        }
+        return super.onPrepareOptionsMenu(menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

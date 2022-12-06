@@ -41,10 +41,10 @@
     <string name="search_member">Search Member</string>
 
     <string name="label_color">Label Color</string>
-    <string name="select_color">Select Color</string>
+    <string name="select_color">No Color Selected</string>
     <string name="select_members">Select Members</string>
     <string name="due_date">Due Date</string>
-    <string name="select_due_date">Select Due Date</string>
+    <string name="select_due_date">No Due Date Selected</string>
     <string name="delete_card">Delete Card</string>
 
     <string name="str_select_label_color">Select Label Color</string>
@@ -59,4 +59,8 @@
     <string name="board_description_optional">Board Description (optional)</string>
     <string name="not_yet_added">Not yet added</string>
     <string name="no_tasks_available">No Tasks Available</string>
+    <string name="no_cards_available">No Cards Available</string>
+    <string name="cards_for_the_task">Cards for the Task</string>
+    <string name="card_detail">Card Detail</string>
+    <string name="no_description_available">No description available for this card.</string>
 </resources>

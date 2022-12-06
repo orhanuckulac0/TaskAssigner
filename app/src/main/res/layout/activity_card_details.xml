@@ -57,6 +57,22 @@
                         />
                 </com.google.android.material.textfield.TextInputLayout>
 
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <androidx.appcompat.widget.AppCompatEditText
+                        android:id="@+id/etCardDescriptionDetails"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/card_detail"
+                        android:inputType="text"
+                        android:textSize="@dimen/et_text_size"
+                        tools:text="Test"
+                        android:background="@color/white"
+                        />
+                </com.google.android.material.textfield.TextInputLayout>
+
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -131,7 +147,7 @@
                     android:text="@string/select_due_date"
                     android:textColor="@color/primary_text_color" />
 
-                <Button
+                <androidx.appcompat.widget.AppCompatButton
                     android:id="@+id/btnUpdateCardDetails"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

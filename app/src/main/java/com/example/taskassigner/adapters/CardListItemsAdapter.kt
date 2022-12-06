@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.taskassigner.activities.TaskListActivity
 import com.example.taskassigner.databinding.ItemCardBinding
+import com.example.taskassigner.models.Board
 import com.example.taskassigner.models.Card
 import com.example.taskassigner.models.SelectedMembers
 

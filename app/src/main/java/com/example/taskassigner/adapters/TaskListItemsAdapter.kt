@@ -16,13 +16,15 @@ import com.example.taskassigner.R
 import com.example.taskassigner.activities.TaskListActivity
 import com.example.taskassigner.databinding.ItemTaskBinding
 import com.example.taskassigner.firebase.FirestoreClass
+import com.example.taskassigner.models.Board
 import com.example.taskassigner.models.Task
 import java.util.*
 import kotlin.collections.ArrayList
 
 open class TaskListItemsAdapter(private val context: Context,
                                 private val list: ArrayList<Task>,
-                                private val createdByID: String):
+                                private val createdByID: String,
+                                private val board: Board):
     RecyclerView.Adapter<TaskListItemsAdapter.ViewHolder>() {
 
     class ViewHolder(binding: ItemTaskBinding) : RecyclerView.ViewHolder(binding.root){
@@ -78,6 +80,7 @@ open class TaskListItemsAdapter(private val context: Context,
             // if current user is not the task creator, change UI
             if (FirestoreClass().getCurrentUserId() != createdByID){
                 holder.tvAddTaskList.text = context.getString(R.string.no_tasks_available)
+
             }
             if (FirestoreClass().getCurrentUserId() != createdByID && list.size > 1){
                 holder.tvAddTaskList.visibility = View.GONE
@@ -89,6 +92,9 @@ open class TaskListItemsAdapter(private val context: Context,
             // vise versa
             holder.tvAddTaskList.visibility = View.GONE
             holder.llTaskItem.visibility = View.VISIBLE
+            if (FirestoreClass().getCurrentUserId() != createdByID) {
+                holder.tvTaskListTitle.textAlignment = View.TEXT_ALIGNMENT_CENTER
+            }
         }
         
         holder.tvTaskListTitle.text = model.title
@@ -181,6 +187,11 @@ open class TaskListItemsAdapter(private val context: Context,
         }else{
             holder.ibEditListName.visibility = View.GONE
             holder.ibDeleteList.visibility = View.GONE
+            if (board.taskList[position].cards.size < 1){
+                holder.tvAddCard.text = context.getString(R.string.no_cards_available)
+            }else{
+                holder.tvAddCard.text = context.getString(R.string.cards_for_the_task)
+            }
 
             // now make changes in CardListItemsAdapter to see whether card is empty or not
             // to adjust UI accordingly
@@ -201,36 +212,39 @@ open class TaskListItemsAdapter(private val context: Context,
             }
         })
 
-        val helper = ItemTouchHelper(
-            object: ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP or ItemTouchHelper.DOWN, 0
-            ){
-                override fun onMove(
-                    recyclerView: RecyclerView,
-                    viewHolder: RecyclerView.ViewHolder,
-                    target: RecyclerView.ViewHolder,
-                ): Boolean {
-                    val fromPos = viewHolder.adapterPosition
-                    val toPos = target.adapterPosition
-                    Collections.swap(list[position].cards, fromPos, toPos)
-                    adapter.notifyItemMoved(fromPos, toPos)
-                    return false
-                }
+        // allow only board creator to use drag and drop functionality
+        if (FirestoreClass().getCurrentUserId() == board.createdByID){
+            val helper = ItemTouchHelper(
+                object: ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP or ItemTouchHelper.DOWN, 0
+                ){
+                    override fun onMove(
+                        recyclerView: RecyclerView,
+                        viewHolder: RecyclerView.ViewHolder,
+                        target: RecyclerView.ViewHolder,
+                    ): Boolean {
+                        val fromPos = viewHolder.adapterPosition
+                        val toPos = target.adapterPosition
+                        Collections.swap(list[position].cards, fromPos, toPos)
+                        adapter.notifyItemMoved(fromPos, toPos)
+                        return false
+                    }
 
-                override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                }
+                    override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                    }
 
-                override fun clearView(
-                    recyclerView: RecyclerView,
-                    viewHolder: RecyclerView.ViewHolder
-                ) {
-                    super.clearView(recyclerView, viewHolder)
-                    // when drag and drop stops, call for updating the DB and UI
-                    (context as TaskListActivity)
-                        .updateCardsInTaskList(position, list[position].cards)
+                    override fun clearView(
+                        recyclerView: RecyclerView,
+                        viewHolder: RecyclerView.ViewHolder
+                    ) {
+                        super.clearView(recyclerView, viewHolder)
+                        // when drag and drop stops, call for updating the DB and UI
+                        (context as TaskListActivity)
+                            .updateCardsInTaskList(position, list[position].cards)
+                    }
                 }
-            }
-        )
-        helper.attachToRecyclerView(holder.rvCardList)
+            )
+            helper.attachToRecyclerView(holder.rvCardList)
+        }
     }
 
     override fun getItemCount(): Int {

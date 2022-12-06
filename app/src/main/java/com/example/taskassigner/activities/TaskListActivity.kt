@@ -246,9 +246,8 @@ class TaskListActivity : BaseActivity(),
         binding?.rvTaskList?.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         binding?.rvTaskList?.setHasFixedSize(true)
 
-        val adapter = TaskListItemsAdapter(this, mBoardDetails.taskList, mBoardDetails.createdByID)
+        val adapter = TaskListItemsAdapter(this, mBoardDetails.taskList, mBoardDetails.createdByID, mBoardDetails)
         binding?.rvTaskList?.adapter = adapter
-
     }
 
     override fun getAssignedMembersListFailed(error: String?) {
