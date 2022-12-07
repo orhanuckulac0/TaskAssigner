@@ -206,6 +206,7 @@ class BoardDetailsActivity : BaseActivity(),
         val boardHashMap = HashMap<String, Any>()
 
         val boardName = binding?.etBoardNameDetails?.text.toString()
+        val boardDescription = binding?.etBoardDescription?.text.toString()
         val labelColor = mSelectedColor
         val dueDate = mSelectedDueDate
 
@@ -218,6 +219,8 @@ class BoardDetailsActivity : BaseActivity(),
             boardHashMap[Constants.IMAGE] = mBoardImageURL
         }
 
+        // board description can be nullable so no need to check if not empty or if not the same as current
+        boardHashMap[Constants.DESCRIPTION] = boardDescription
         boardHashMap[Constants.LABEL_COLOR] = labelColor
         boardHashMap[Constants.DUE_DATE] = dueDate
 

@@ -14,6 +14,7 @@ object Constants{
     const val BOARD_DETAIL: String = "board_detail"
     const val LABEL_COLOR: String = "labelColor"
     const val DUE_DATE: String = "dueDate"
+    const val DESCRIPTION : String = "description"
     const val USER_ID: String = "id"
     const val EMAIL: String = "email"
     const val BOARD_MEMBERS_LIST = "board_members_list"

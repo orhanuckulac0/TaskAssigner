@@ -240,8 +240,9 @@ class CardDetailsActivity : BaseActivity(),
             mBoardDetails.taskList[mTaskListPosition].cards[mCardPosition].createdBy,
             mBoardDetails.taskList[mTaskListPosition].cards[mCardPosition].assignedTo,
             mSelectedColor,
-            mSelectedDueDate
-            )
+            mSelectedDueDate,
+            binding?.etCardDescriptionDetails?.text.toString()
+        )
 
         mBoardDetails.taskList[mTaskListPosition].cards[mCardPosition] = updatedCard
         // this below line is essential
